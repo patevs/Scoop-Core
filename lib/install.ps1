@@ -964,12 +964,13 @@ function link_current($versiondir) {
 
     if (Test-Path $currentdir) {
         # remove the junction
-        attrib -R /L $currentdir
-        & "$env:COMSPEC" /c rmdir $currentdir
+        # TODO: Verify linux
+        Invoke-SystemCommand -Windows "attrib -R /L $currentdir" -Unix "chmod 777 ""$source"""
+        Remove-DirectoryJunctionLink -LinkName $currentdir
     }
-
-    & "$env:COMSPEC" /c mklink /j $currentdir $versiondir | Out-Null
-    attrib $currentdir +R /L
+    New-DirectoryJunctionLink -Target $versiondir -LinkName $currentdir | Out-Null
+    # TODO: Verify linux
+    Invoke-SystemCommand -Windows "attrib +R /L $currentdir" -Unix "chmod 0444 ""$source"""
 
     return $currentdir
 }
@@ -986,11 +987,11 @@ function unlink_current($versiondir) {
     if (Test-Path $currentdir) {
         Write-UserMessage -Message "Unlinking $(friendly_path $currentdir)" -Output:$false
 
-        # remove read-only attribute on link
-        attrib $currentdir -R /L
-
-        # remove the junction
-        & "$env:COMSPEC" /c "rmdir `"$currentdir`""
+        # Remove read-only attribute on link
+        # TODO: Verify linux
+        Invoke-SystemCommand -Windows "attrib -R /L ""$currentdir""" -Unix "chmod 777 ""$currentdir"""
+        # Remove the junction
+        Remove-DirectoryJunctionLink -LinkName $currentdir
 
         return $currentdir
     }
@@ -1203,21 +1204,22 @@ function persist_data($manifest, $original_dir, $persist_dir) {
                 # to create the source file before persisting (DO NOT use post_install)
             } else {
                 $target = New-Object System.IO.DirectoryInfo($target)
-                ensure $target | Out-Null
+                Confirm-DirectoryExistence -Directory $target | Out-Null
             }
 
             # Mklink throw 'The system cannot find the path specified.' if the full path of the link does not exist.
             $splitted = Split-Path $source -Parent
-            if ($splitted -ne $original_dir) { ensure $splitted | Out-Null }
+            if ($splitted -ne $original_dir) { Confirm-DirectoryExistence -Directory $splitted | Out-Null }
 
             # create link
             if (is_directory $target) {
                 # target is a directory, create junction
-                & "$env:COMSPEC" /c "mklink /j `"$source`" `"$target`"" | Out-Null
-                attrib $source +R /L
+                New-DirectoryJunctionLink -Target $source -LinkName $target | Out-Null
+                # TODO: Verify linux
+                Invoke-SystemCommand -Windows "attrib +R /L $source" -Unix "chmod 0444 ""$source"""
             } else {
                 # target is a file, create hard link
-                & "$env:COMSPEC" /c "mklink /h `"$source`" `"$target`"" | Out-Null
+                New-FileHardLink -Target $target -LinkName $source | Out-Null
             }
         }
     }
@@ -1230,13 +1232,16 @@ function unlink_persist_data($dir) {
             $filepath = $file.FullName
             # directory (junction)
             if ($file -is [System.IO.DirectoryInfo]) {
-                # remove read-only attribute on the link
-                attrib -R /L $filepath
-                # remove the junction
-                & "$env:COMSPEC" /c "rmdir /s /q `"$filepath`""
+                # Remove read-only attribute on the link
+                # TODO: Verify linux
+                Invoke-SystemCommand -Windows "attrib -R /L ""$filepath""" -Unix "chmod 777 ""$source"""
+                # Remove the junction
+                # TODO: Verify linux
+                Invoke-SystemCommand -Windows "RMDIR /S /Q ""$filepath""" -Unix "rm ""$filepath"""
             } else {
-                # remove the hard link
-                & "$env:COMSPEC" /c "del `"$filepath`""
+                # Remove the hard link
+                # TODO: Verify linux
+                Invoke-SystemCommand -Windows "DEL ""$filepath""" -Unix "rm ""$filepath"""
             }
         }
     }

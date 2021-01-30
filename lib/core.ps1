@@ -86,8 +86,61 @@ function Invoke-SystemCommand {
             $shell = $env:SHELL
             $parameters = @('-c', $Unix)
         }
+        $debugShell = "& ""$shell"" $($parameters -join ' ')"
+        debug $debugShell
 
         & "$shell" @parameters
+    }
+}
+
+function New-DirectoryJunctionLink {
+    <#
+    .SYNOPSIS
+        Create a new directory junction.
+    .DESCRIPTION
+        On Unix ln --symbolic will be used instead.
+    .PARAMETER Target
+        Specifies the real directory path.
+    .PARAMETER LinkName
+        Specifies the symbolic link name.
+    #>
+    [CmdletBinding()]
+    param([String] $Target, [String] $LinkName)
+
+    process {
+        Invoke-SystemCommand -Windows "MKLINK /J ""$LinkName"" ""$Target""" -Unix "ln --symbolic ""$Target"" ""$LinkName"""
+    }
+}
+
+function New-FileHardLink {
+    <#
+    .SYNOPSIS
+        Create a new file hard link.
+    .PARAMETER Target
+        Specifies the real directory path.
+    .PARAMETER LinkName
+        Specifies the symbolic link name.
+    #>
+    [CmdletBinding()]
+    param([String] $Target, [String] $LinkName)
+
+    process {
+        Invoke-SystemCommand -Windows "MKLINK /H ""$LinkName"" ""$Target""" -Unix "ln ""$Target"" ""$LinkName"""
+    }
+}
+
+function Remove-DirectoryJunctionLink {
+    <#
+    .SYNOPSIS
+        Removes directory junction.
+    .PARAMETER Target
+        Specifies the directory junction path.
+    #>
+    [CmdletBinding()]
+    param([String] $LinkName)
+
+    process {
+        Invoke-SystemCommand -Windows "RMDIR ""$LinkName""" -Unix "rm ""$LinkName"""
     }
 }
 

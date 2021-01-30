@@ -27,12 +27,10 @@ function install_psmodule($manifest, $dir, $global) {
     if (Test-Path $linkFrom) {
         Write-UserMessage -Message "$(friendly_path $linkFrom) already exists. It will be replaced." -Warning
         $linkFrom = Resolve-Path $linkFrom
-        # TODO: Drop comspec
-        & "$env:COMSPEC" /c "rmdir `"$linkFrom`""
+        Remove-DirectoryJunctionLink -LinkName $linkFrom
     }
 
-    # TODO: Drop comspec
-    & "$env:COMSPEC" /c "mklink /j `"$linkFrom`" `"$dir`"" | Out-Null
+    New-DirectoryJunctionLink -Target $dir -LinkName $linkFrom | Out-Null
 }
 
 function uninstall_psmodule($manifest, $dir, $global) {
@@ -48,8 +46,7 @@ function uninstall_psmodule($manifest, $dir, $global) {
     if (Test-Path $linkFrom) {
         Write-UserMessage -Message "Removing $(friendly_path $linkFrom)"
         $linkfrom = Resolve-Path $linkFrom
-        # TODO: Drop comspec
-        & "$env:COMSPEC" /c "rmdir `"$linkFrom`""
+        Remove-DirectoryJunctionLink -LinkName $linkFrom
     }
 }
 

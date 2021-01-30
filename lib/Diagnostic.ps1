@@ -129,12 +129,18 @@ function Test-EnvironmentVariable {
 
     # Comspec
     if (($null -eq $env:COMSPEC) -or (!(Test-Path $env:COMSPEC -PathType 'Leaf'))) {
-        Write-UserMessage -Message '''COMSPEC'' is not configured' -Warning
+        Write-UserMessage -Message '''COMSPEC'' environment variable is not configured' -Warning
         Write-UserMessage -Message @(
             '  By default the variable should points to the cmd.exe in Windows: ''%SystemRoot%\system32\cmd.exe''.'
             '  Fixable with running following command in elevated prompt:'
             '    [Environment]::SetEnvironmentVariable(''COMSPEC'', "$env:SystemRoot\system32\cmd.exe", ''Machine'')'
         )
+        $result = $false
+    }
+
+    # Unix "comspec"
+    if (($isWindows -eq $false) -and (!(Test-Path $env:SHELL -PathType 'Leaf'))) {
+        Write-UserMessage -Message '''SHELL'' environment variable is not configured' -Warning
         $result = $false
     }
 

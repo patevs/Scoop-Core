@@ -58,6 +58,39 @@ function Show-DeprecatedWarning {
     Write-UserMessage -Message "      -> $($Invocation.PSCommandPath):$($Invocation.ScriptLineNumber):$($Invocation.OffsetInLine)" -Color 'DarkGray'
 }
 
+function Invoke-SystemCommand {
+    <#
+    .SYNOPSIS
+        Short description
+    .DESCRIPTION
+        Long description
+    .PARAMETER Windows
+        Specifies the command to be executed on Windows using $env:ComSpec.
+    .PARAMETER Unix
+        Specifies the command to be executed on *Nix like systems using $env:SHELL.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [String] $Windows,
+        [Parameter(Mandatory)]
+        [String] $Unix
+    )
+
+    process {
+        # $isWindows is not defined in PW5
+        if (($null -eq $isWindows) -or ($isWindows -eq $true)) {
+            $shell = $env:ComSpec
+            $parameters = @('/d', '/c', $Windows)
+        } else {
+            $shell = $env:SHELL
+            $parameters = @('-c', $Unix)
+        }
+
+        & "$shell" @parameters
+    }
+}
+
 function load_cfg($file) {
     if (!(Test-Path $file)) { return $null }
 

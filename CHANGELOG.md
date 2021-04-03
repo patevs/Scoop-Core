@@ -4,6 +4,7 @@
 
 ### 0.6-pre3
 
+- **install**: Support installation of older versions
 - **autoupdate**: Archive old versions of manifest when executing checkver/autoupdate
 - **Git**: Always use `--no-pager` option
 - **checkup**: Test Windows Defender exlusions only when executed with administrator privileges

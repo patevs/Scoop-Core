@@ -23,10 +23,10 @@ function ConvertFrom-Manifest {
     )
 
     process {
-        if (!(Test-Path $Path -PathType 'Leaf')) { return $null }
+        if (!(Test-Path -LiteralPath $Path -PathType 'Leaf')) { return $null }
 
         $result = $null
-        $content = Get-Content $Path -Encoding 'UTF8' -Raw
+        $content = Get-Content -LiteralPath $Path -Encoding 'UTF8' -Raw
 
         switch ($Path.Extension) {
             '.json' {
@@ -288,10 +288,10 @@ function generate_user_manifest($app, $bucket, $version) {
     $archivedManifest = $archivedManifest | Where-Object -Property 'Name' -Match -Value "\.($ALLOWED_MANIFEST_EXTENSION_REGEX)$"
     if ($archivedManifest.Count -gt 0) {
         $archivedManifest = @($archivedManifest | Where-Object -Property 'BaseName' -EQ -Value $version)
-        $archivedManifest = $archivedManifest[0]
+        $archivedManifest = $archivedManifest[0].FullName
     }
 
-    if (Test-Path $archivedManifest) {
+    if (Test-Path -LiteralPath $archivedManifest) {
         $archivedManifest = Get-Item -LiteralPath $archivedManifest
         Write-UserMessage -Message 'Found archived version' -Success
 
@@ -320,6 +320,7 @@ function generate_user_manifest($app, $bucket, $version) {
         if ($null -eq $newManifest) { throw "Could not install $app@$version" }
 
         Write-UserMessage -Message "Writing updated $app manifest" -Color 'DarkGreen'
+        # TODO: YAML
         ConvertTo-Manifest -Path (Join-Path $path "$app.json") -Manifest $newManifest
 
         return (usermanifest $app | Resolve-Path).Path

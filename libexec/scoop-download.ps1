@@ -61,14 +61,18 @@ foreach ($app in $application) {
 
     # Generate manifest if there is different version in manifest
     if (($null -ne $version) -and ($manifest.version -ne $version)) {
-        $generated = generate_user_manifest $appName $bucket $version
+        try {
+            $generated = generate_user_manifest $appName $bucket $version
+        } catch {
+            $generated = $null
+        }
         if ($null -eq $generated) {
             Write-UserMessage -Message 'Manifest cannot be generated with provided version' -Err
             ++$problems
 
             continue
         }
-        $manifest = parse_json $generated
+        $manifest = ConvertFrom-Manifest -LiteralPath $generated
     }
 
     if (-not $version) { $version = $manifest.version }

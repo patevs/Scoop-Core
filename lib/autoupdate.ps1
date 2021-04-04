@@ -362,6 +362,7 @@ function Invoke-Autoupdate ([String] $app, $dir, $json, [String] $version, [Hash
     Write-UserMessage -Message "Autoupdating $app" -Color 'DarkCyan'
 
     $oldVersion = $json.version
+    $oldJson = $json.PSObject.Copy()
     $has_changes = $false
     $has_errors = $false
     [bool] $valid = $true
@@ -429,7 +430,6 @@ function Invoke-Autoupdate ([String] $app, $dir, $json, [String] $version, [Hash
     if ($has_changes -and !$has_errors) {
         # Archive older version
         if (!$IgnoreArchive -and ($json.autoupdate.archive -and ($json.autoupdate.archive -eq $true))) {
-            $oldJson = $json.PSObject.Copy()
             $appOldPath = Join-Path $dir "old\$app"
             $manifestOldPath = Join-Path $appOldPath "${oldVersion}${Extension}"
 

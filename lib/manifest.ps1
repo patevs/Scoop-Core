@@ -284,19 +284,18 @@ function generate_user_manifest($app, $bucket, $version) {
 
     # Seach local path
     # TODO: Export to function
-    $archivedManifest = Find-BucketDirectory -Name $bucket | Join-Path -ChildPath "old\$cleanApp" | Get-ChildItem -File
-    $archivedManifest = $archivedManifest | Where-Object -Property 'Name' -Match -Value "\.($ALLOWED_MANIFEST_EXTENSION_REGEX)$"
+    $foundArchived = $null
+    $archivedManifest = Find-BucketDirectory -Name $bucket | Join-Path -ChildPath "old\$cleanApp" | Get-ChildItem -File |
+        Where-Object -Property 'Name' -Match -Value "\.($ALLOWED_MANIFEST_EXTENSION_REGEX)$"
     if ($archivedManifest.Count -gt 0) {
-        $archivedManifest = @($archivedManifest | Where-Object -Property 'BaseName' -EQ -Value $version)
-        $archivedManifest = $archivedManifest[0].FullName
+        $foundArchived = @($archivedManifest | Where-Object -Property 'BaseName' -EQ -Value $version)[0]
     }
 
-    if (Test-Path -LiteralPath $archivedManifest) {
-        $archivedManifest = Get-Item -LiteralPath $archivedManifest
+    if ($foundArchived -and (Test-Path -LiteralPath $foundArchived.FullName)) {
         Write-UserMessage -Message 'Found archived version' -Success
 
-        $workspace = usermanifestsdir | Join-Path -ChildPath "$cleanApp$($archivedManifest.Extension)"
-        Copy-Item $archivedManifest.FullName $workspace -Force
+        $workspace = usermanifestsdir | Join-Path -ChildPath "$cleanApp$($foundArchived.Extension)"
+        Copy-Item $foundArchived.FullName $workspace -Force
 
         return $workspace
     }

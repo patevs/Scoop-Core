@@ -100,8 +100,12 @@ function ConvertTo-Manifest {
 function manifest_path($app, $bucket) {
     $name = sanitary_path $app
     $buc = Find-BucketDirectory -Bucket $bucket
-    $file = Get-ChildItem -LiteralPath $buc -Filter "$name.*"
-    $path = $null
+    $path = $file = $null
+    try {
+        $file = Get-ChildItem -LiteralPath $buc -Filter "$name.*" -ErrorAction 'Stop'
+    } catch {
+        return $path
+    }
 
     if ($file) {
         if ($file.Count -gt 1) { $file = $file[0] }
@@ -155,10 +159,10 @@ function save_installed_manifest($app, $bucket, $dir, $url) {
     if ($url) {
         $wc = New-Object System.Net.Webclient
         $wc.Headers.Add('User-Agent', (Get-UserAgent))
-        # TODO: YML
+        # TODO: YAML
         Join-Path $dir 'scoop-manifest.json' | Out-UTF8Content -Content ($wc.DownloadString($url))
     } else {
-        # TODO: YML
+        # TODO: YAML
         Copy-Item (manifest_path $app $bucket) (Join-Path $dir 'scoop-manifest.json')
     }
 }
@@ -284,14 +288,15 @@ function generate_user_manifest($app, $bucket, $version) {
 
     # Seach local path
     # TODO: Export to function
-    $foundArchived = $null
-    $archivedManifest = Find-BucketDirectory -Name $bucket | Join-Path -ChildPath "old\$cleanApp" | Get-ChildItem -File |
-        Where-Object -Property 'Name' -Match -Value "\.($ALLOWED_MANIFEST_EXTENSION_REGEX)$"
+    $archivedManifest = Find-BucketDirectory -Name $bucket | Join-Path -ChildPath "old\$cleanApp" | Get-ChildItem -ErrorAction 'SilentlyContinue' -File
+    $archivedManifest = $archivedManifest | Where-Object -Property 'Name' -Match -Value "\.($ALLOWED_MANIFEST_EXTENSION_REGEX)$"
     if ($archivedManifest.Count -gt 0) {
-        $foundArchived = @($archivedManifest | Where-Object -Property 'BaseName' -EQ -Value $version)[0]
+        $archivedManifest = @($archivedManifest | Where-Object -Property 'BaseName' -EQ -Value $version)
+        $archivedManifest = $archivedManifest[0]
     }
 
-    if ($foundArchived -and (Test-Path -LiteralPath $foundArchived.FullName)) {
+    if ($archivedManifest -and (Test-Path -LiteralPath $archivedManifest)) {
+        $archivedManifest = Get-Item -LiteralPath $archivedManifest
         Write-UserMessage -Message 'Found archived version' -Success
 
         $workspace = usermanifestsdir | Join-Path -ChildPath "$cleanApp$($foundArchived.Extension)"

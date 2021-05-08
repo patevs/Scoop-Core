@@ -5,6 +5,7 @@ if (!((Get-Command 'scoop' -ErrorAction 'SilentlyContinue') -or (Get-Command 'sh
 
 $script:SCOOP_DIRECTORY = $env:SCOOP, "$env:USERPROFILE\scoop" | Where-Object { ![String]::IsNullOrEmpty($_) } | Select-Object -First 1
 $script:SCOOP_GLOBAL_DIRECTORY = $env:SCOOP_GLOBAL, "$env:ProgramData\scoop" | Where-Object { ![String]::IsNullOrEmpty($_) } | Select-Object -First 1
+$script:SCOOP_CACHE_DIRECTORY = $env:SCOOP_CACHE, "$SCOOP_DIRECTORY\cache" | Where-Object { ![String]::IsNullOrEmpty($_) } | Select-Object -First 1
 $script:SCOOP_COMMANDS = @(
     'alias'
     'bucket'
@@ -38,12 +39,14 @@ $script:SCOOP_SUB_COMMANDS = @{
     'bucket' = 'add known list rm'
     'cache'  = 'rm show'
     'config' = 'rm show'
-    'utils'  = 'auto-pr checkhashes checkurl checkver describe format missing-checkver'
+    'utils'  = 'auto-pr checkhashes checkurls checkver describe format missing-checkver'
 }
 $script:SCOOP_SHORT_PARAMETERS = @{
     'cleanup'    = 'g k'
+    'depends'    = 'a'
     'download'   = 's u a b'
     'hold'       = 'g'
+    'info'       = 'a'
     'install'    = 'g i k s a'
     'list'       = 'i u r'
     'search'     = 'r'
@@ -55,8 +58,10 @@ $script:SCOOP_SHORT_PARAMETERS = @{
 }
 $script:SCOOP_LONG_PARAMETERS = @{
     'cleanup'    = 'global cache'
+    'depends'    = 'arch'
     'download'   = 'skip utility arch all-architectures'
     'hold'       = 'global'
+    'info'       = 'arch'
     'install'    = 'global independent no-cache skip arch'
     'list'       = 'installed updated reverse'
     'search'     = 'remote'
@@ -84,6 +89,14 @@ foreach ($cmd in $SCOOP_COMMANDS) {
 
 $script:SCOOP_PARAMETER_VALUES = @{
     'install'    = @{
+        'a'    = '32bit 64bit'
+        'arch' = '32bit 64bit'
+    }
+    'depends'    = @{
+        'a'    = '32bit 64bit'
+        'arch' = '32bit 64bit'
+    }
+    'info'       = @{
         'a'    = '32bit 64bit'
         'arch' = '32bit 64bit'
     }
@@ -170,9 +183,11 @@ function script:Get-LocallyAvailableApplicationsByScoop($Filter) {
 }
 
 function script:Get-ScoopCachedFile($Filter) {
-    $files = Get-ChildItem $SCOOP_DIRECTORY 'cache\*' -File -Name
+    if (!(Test-Path -LiteralPath $SCOOP_CACHE_DIRECTORY)) { return @() }
 
+    $files = Get-ChildItem -Path "$SCOOP_CACHE_DIRECTORY\*#*" -File -Name
     $res = @()
+
     foreach ($f in $files) { $res += ($f -split '#')[0] }
 
     return @($res | Select-Object -Unique) -like "$Filter*"

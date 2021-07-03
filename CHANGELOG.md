@@ -11,6 +11,7 @@
     - Support validation of all archived manifests
 - **scoop-cat**: Add `-f`, `--format` options
 - Adopt new resolve function for parameter passing
+    - **scoop-virustotal**
     - **scoop-home**
     - **scoop-cat**
     - **scoop-download**

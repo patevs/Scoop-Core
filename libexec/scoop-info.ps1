@@ -1,5 +1,6 @@
 # Usage: scoop info [<OPTIONS>] <APP>
 # Summary: Display information about an application.
+# Help: When provided application is installed, all information will be shown based on the locally installed manifest.
 #
 # Options:
 #   -h, --help                  Show help for this command.
@@ -13,6 +14,8 @@ Reset-Alias
 
 $ExitCode = 0
 $Options, $Application, $_err = getopt $args 'a:' 'arch='
+# TODO: Add some --remote parameter to not use installed manifest
+# TODO: Add --global
 
 if ($_err) { Stop-ScoopExecution -Message "scoop info: $_err" -ExitCode 2 }
 if (!$Application) { Stop-ScoopExecution -Message 'Parameter <APP> missing' -Usage (my_usage) }
@@ -20,7 +23,99 @@ if (!$Application) { Stop-ScoopExecution -Message 'Parameter <APP> missing' -Usa
 $Application = $Application[0]
 $Architecture = Resolve-ArchitectureParameter -Architecture $Options.a, $Options.arch
 
-# TODO: Adopt Resolve-ManifestInformation
+$Resolved = $null
+try {
+    $Resolved = Resolve-ManifestInformation -ApplicationQuery $Application
+} catch {
+    Stop-ScoopExecution -Message $_.Exception.Message
+}
+
+# TODO: Remove debug
+$Resolved | Format-List
+
+# Variables
+$Message = @()
+$Global = installed $Resolved.ApplicationName $true # TODO: In case both of them are installed only global will be shown
+$Status = app_status $Resolved.ApplicationName $global
+$Manifest = $Resolved.ManifestObject
+# TODO: Switch manifest if it is installed
+# TODO: Get install_info
+# TODO: Load installed manifest if such specific manifest is installed, $install.bucket -eq $Resolved.Bucket
+#       or $install.url -eq $Resolved.Url
+
+$dir = (versiondir $Resolved.ApplicationName $Status.version $Global).TrimEnd('\')
+$original_dir = (versiondir $Resolved.ApplicationName $Status.version $Global).TrimEnd('\')
+$persist_dir = (persistdir $Resolved.ApplicationName $Global).TrimEnd('\')
+
+# TODO: Remove debug
+$Status | Format-List
+
+$binaries = @(arch_specific 'bin' $Manifest $Architecture)
+if ($binaries) {
+    $Message += 'Binaries:'
+    $add = ''
+    foreach ($b in $binaries) {
+        $addition = "$b"
+        if ($b -is [System.Array]) {
+            $addition = $b[0]
+            if ($b[1]) {
+                $addition = "$($b[1]).exe"
+            }
+        }
+        $add = "$add $addition"
+    }
+    $Message += $add
+}
+
+#region Environment
+$env_set = arch_specific 'env_set' $Manifest $Architecture
+$env_add_path = @(arch_specific 'env_add_path' $Manifest $Architecture)
+
+if ($env_set -or $env_add_path) {
+    $m = 'Environment:'
+    if (!$Status.installed) { $m += ' (simulated)' }
+    $Message += $m
+}
+
+if ($env_set) {
+    foreach ($es in $env_set | Get-Member -MemberType 'NoteProperty') {
+        $value = env $es.Name $Global
+        if (!$value) {
+            $value = format $env_set.$($es.name) @{ 'dir' = $dir }
+        }
+        $Message += "  $($es.name)=$value"
+    }
+}
+if ($env_add_path) {
+    # TODO: Should be path rather joined on one line or with multiple PATH=??
+    # Original:
+    # PATH=%PATH%;C:\SCOOP\apps\yarn\current\global\node_modules\.bin
+    # PATH=%PATH%;C:\SCOOP\apps\yarn\current\Yarn\bin
+    # vs:
+    # PATH=%PATH%;C:\SCOOP\apps\yarn\current\global\node_modules\.bin;C:\SCOOP\apps\yarn\current\Yarn\bin
+    foreach ($ea in $env_add_path | Where-Object { $_ }) {
+        $to = "$dir"
+        if ($ea -ne '.') {
+            $to = "$to\$ea"
+        }
+        $Message += "  PATH=%PATH%;$to"
+    }
+}
+#endregion Environment
+
+# Available versions:
+$vers = Find-BucketDirectory -Name $resolved.Bucket | Join-Path -ChildPath "old\$Application" | Get-ChildItem -ErrorAction 'SilentlyContinue' -File |
+    Where-Object -Property 'Name' -Match -Value "\.($ALLOWED_MANIFEST_EXTENSION_REGEX)$"
+
+if ($vers.Count -gt 0) { $message += "Available Versions: $($vers.BaseName -join ', ')" }
+
+Write-UserMessage -Message $message -Output
+
+# Show notes
+show_notes $Manifest $dir $original_dir $persist_dir
+
+exit $ExitCode
+
 if ($Application -match '^(ht|f)tps?://|\\\\') {
     # check if $Application is a URL or UNC path
     $url = $Application
@@ -112,69 +207,3 @@ if ($status.installed) {
 } else {
     $message += 'Installed: No'
 }
-
-$binaries = @(arch_specific 'bin' $manifest $Architecture)
-if ($binaries) {
-    $message += 'Binaries:'
-    $add = ''
-    $binaries | ForEach-Object {
-        $addition = "$_"
-        if ($_ -is [System.Array]) {
-            $addition = $_[0]
-            if ($_[1]) {
-                $addition = "$($_[1]).exe"
-            }
-        }
-        $add = "$add $addition"
-    }
-    $message += $add
-}
-
-$env_set = arch_specific 'env_set' $manifest $Architecture
-$env_add_path = @(arch_specific 'env_add_path' $manifest $Architecture)
-
-if ($env_set -or $env_add_path) {
-    $m = 'Environment:'
-    if (!$status.installed) {
-        $m += ' (simulated)'
-    }
-    $message += $m
-}
-
-if ($env_set) {
-    $env_set | Get-Member -MemberType 'NoteProperty' | ForEach-Object {
-        $value = env $_.name $global
-        if (!$value) {
-            $value = format $env_set.$($_.name) @{ 'dir' = $dir }
-        }
-        $message += "  $($_.name)=$value"
-    }
-}
-if ($env_add_path) {
-    # TODO: Should be path rather joined on one line or with multiple PATH=??
-    # Original:
-    # PATH=%PATH%;C:\SCOOP\apps\yarn\current\global\node_modules\.bin
-    # PATH=%PATH%;C:\SCOOP\apps\yarn\current\Yarn\bin
-    # vs:
-    # PATH=%PATH%;C:\SCOOP\apps\yarn\current\global\node_modules\.bin;C:\SCOOP\apps\yarn\current\Yarn\bin
-    $env_add_path | Where-Object { $_ } | ForEach-Object {
-        $to = "$dir"
-        if ($_ -ne '.') {
-            $to = "$to\$_"
-        }
-        $message += "  PATH=%PATH%;$to"
-    }
-}
-
-# Available versions:
-$vers = Find-BucketDirectory -Name $bucket | Join-Path -ChildPath "old\$Application" | Get-ChildItem -ErrorAction 'SilentlyContinue' -File |
-    Where-Object -Property 'Name' -Match -Value "\.($ALLOWED_MANIFEST_EXTENSION_REGEX)$"
-
-if ($vers.Count -gt 0) { $message += "Available Versions: $($vers.BaseName -join ', ')" }
-
-Write-UserMessage -Message $message -Output
-
-# Show notes
-show_notes $manifest $dir $original_dir $persist_dir
-
-exit $ExitCode

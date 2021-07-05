@@ -34,21 +34,73 @@ try {
 $Resolved | Format-List
 
 # Variables
+$Name = $Resolved.ApplicationName
 $Message = @()
-$Global = installed $Resolved.ApplicationName $true # TODO: In case both of them are installed only global will be shown
-$Status = app_status $Resolved.ApplicationName $global
+$Global = installed $Name $true # TODO: In case both of them are installed only global will be shown
+$Status = app_status $Name $global
 $Manifest = $Resolved.ManifestObject
+$ManifestPath = $Resolved.LocalPath
 # TODO: Switch manifest if it is installed
 # TODO: Get install_info
 # TODO: Load installed manifest if such specific manifest is installed, $install.bucket -eq $Resolved.Bucket
 #       or $install.url -eq $Resolved.Url
 
-$dir = (versiondir $Resolved.ApplicationName $Status.version $Global).TrimEnd('\')
-$original_dir = (versiondir $Resolved.ApplicationName $Status.version $Global).TrimEnd('\')
-$persist_dir = (persistdir $Resolved.ApplicationName $Global).TrimEnd('\')
+$dir = (versiondir $Name $Status.version $Global).TrimEnd('\')
+$original_dir = (versiondir $Name $Status.version $Global).TrimEnd('\')
+$persist_dir = (persistdir $Name $Global).TrimEnd('\')
 
 # TODO: Remove debug
 $Status | Format-List
+
+$Message = @("Name: $Name")
+$Message += "Version: $($Status.version)"
+if ($Manifest.description) { $Message += "Description: $($Manifest.description)" }
+if ($Manifest.homepage) { $Message += "Website: $($Manifest.homepage)" }
+
+# Show license
+# TODO: Rework
+if ($Manifest.license) {
+    $license = $Manifest.license
+    if ($Manifest.license.identifier -and $Manifest.license.url) {
+        $license = "$($Manifest.license.identifier) ($($Manifest.license.url))"
+    } elseif ($Manifest.license -match '^((ht)|f)tps?://') {
+        $license = "$($Manifest.license)"
+    } elseif ($Manifest.license -match '[|,]') {
+        $licurl = $Manifest.license.Split('|,') | ForEach-Object { "https://spdx.org/licenses/$_.html" }
+        $license = "$($Manifest.license) ($($licurl -join ', '))"
+    } else {
+        $license = "$($Manifest.license) (https://spdx.org/licenses/$($Manifest.license).html)"
+    }
+    $message += "License: $license"
+}
+
+if ($Manifest.changelog) {
+    $ch = $Manifest.changelog
+    if (!$ch.StartsWith('http')) {
+        if ($status.installed) {
+            $ch = Join-Path $dir $ch
+        } else {
+            $ch = "Could be found in file '$ch' inside application directory. Install application to see a recent changes"
+        }
+    }
+    $Message += "Changelog: $ch"
+}
+
+# Manifest file
+$Message += @('Manifest:', "  $ManifestPath")
+
+# Show installed versions
+if ($Status.installed) {
+    $Message += 'Installed:'
+    $versions = Get-InstalledVersion -AppName $Name -Global:$global
+    $versions | ForEach-Object {
+        $dir = versiondir $Application $_ $global
+        if ($global) { $dir += ' *global*' }
+        $Message += "  $dir"
+    }
+} else {
+    $Message += 'Installed: No'
+}
 
 $binaries = @(arch_specific 'bin' $Manifest $Architecture)
 if ($binaries) {
@@ -104,7 +156,7 @@ if ($env_add_path) {
 #endregion Environment
 
 # Available versions:
-$vers = Find-BucketDirectory -Name $resolved.Bucket | Join-Path -ChildPath "old\$Application" | Get-ChildItem -ErrorAction 'SilentlyContinue' -File |
+$vers = Find-BucketDirectory -Name $resolved.Bucket | Join-Path -ChildPath "old\$Name" | Get-ChildItem -ErrorAction 'SilentlyContinue' -File |
     Where-Object -Property 'Name' -Match -Value "\.($ALLOWED_MANIFEST_EXTENSION_REGEX)$"
 
 if ($vers.Count -gt 0) { $message += "Available Versions: $($vers.BaseName -join ', ')" }
@@ -157,53 +209,4 @@ if ($status.installed) {
         $version_output = "$($status.version) (Update to $($manifest.version) available)"
     }
     $Architecture = $install.architecture
-}
-
-$message = @("Name: $Application")
-$message += "Version: $version_output"
-if ($manifest.description) { $message += "Description: $($manifest.description)" }
-if ($manifest.homepage) { $message += "Website: $($manifest.homepage)" }
-
-# Show license
-# TODO: Rework
-if ($manifest.license) {
-    $license = $manifest.license
-    if ($manifest.license.identifier -and $manifest.license.url) {
-        $license = "$($manifest.license.identifier) ($($manifest.license.url))"
-    } elseif ($manifest.license -match '^((ht)|f)tps?://') {
-        $license = "$($manifest.license)"
-    } elseif ($manifest.license -match '[|,]') {
-        $licurl = $manifest.license.Split('|,') | ForEach-Object { "https://spdx.org/licenses/$_.html" }
-        $license = "$($manifest.license) ($($licurl -join ', '))"
-    } else {
-        $license = "$($manifest.license) (https://spdx.org/licenses/$($manifest.license).html)"
-    }
-    $message += "License: $license"
-}
-if ($manifest.changelog) {
-    $ch = $manifest.changelog
-    if (!$ch.StartsWith('http')) {
-        if ($status.installed) {
-            $ch = Join-Path $dir $ch
-        } else {
-            $ch = "Could be found in file '$ch' inside application directory. Install application to see a recent changes"
-        }
-    }
-    $message += "Changelog: $ch"
-}
-
-# Manifest file
-$message += @('Manifest:', "  $manifest_file")
-
-# Show installed versions
-if ($status.installed) {
-    $message += 'Installed:'
-    $versions = Get-InstalledVersion -AppName $Application -Global:$global
-    $versions | ForEach-Object {
-        $dir = versiondir $Application $_ $global
-        if ($global) { $dir += ' *global*' }
-        $message += "  $dir"
-    }
-} else {
-    $message += 'Installed: No'
 }

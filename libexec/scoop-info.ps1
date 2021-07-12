@@ -14,8 +14,11 @@ Reset-Alias
 
 $ExitCode = 0
 $Options, $Application, $_err = getopt $args 'a:' 'arch='
+# $Options, $Application, $_err = getopt $args 'a:gi' 'arch=', 'global', 'ignore-installed'
 # TODO: Add some --remote parameter to not use installed manifest
+#   -i, --ignore-installed >    Remote manifest will be used to get all required information. Ignoring locally installed manifest (scoop-manifest.json).
 # TODO: Add --global
+#   -g, --global                Show information about globally installed application.
 
 if ($_err) { Stop-ScoopExecution -Message "scoop info: $_err" -ExitCode 2 }
 if (!$Application) { Stop-ScoopExecution -Message 'Parameter <APP> missing' -Usage (my_usage) }
@@ -30,30 +33,77 @@ try {
     Stop-ScoopExecution -Message $_.Exception.Message
 }
 
-# TODO: Remove debug
-$Resolved | Format-List
-
 # Variables
 $Name = $Resolved.ApplicationName
 $Message = @()
-$Global = installed $Name $true # TODO: In case both of them are installed only global will be shown
-$Status = app_status $Name $global
+$Global = installed $Name $true # TODO: In case both of them are installed only global will be shown (--global parameter)
+$Status = app_status $Name $Global
 $Manifest = $Resolved.ManifestObject
-$ManifestPath = $Resolved.LocalPath
-# TODO: Switch manifest if it is installed
-# TODO: Get install_info
-# TODO: Load installed manifest if such specific manifest is installed, $install.bucket -eq $Resolved.Bucket
-#       or $install.url -eq $Resolved.Url
+$ManifestPath = @($Resolved.LocalPath)
 
-$dir = (versiondir $Name $Status.version $Global).TrimEnd('\')
-$original_dir = (versiondir $Name $Status.version $Global).TrimEnd('\')
+$Resolved | Format-List
+
+# Application is installed. Could be from different url/bucket/
+if ($Status.installed) {
+    # Application is installed from different bucket
+    if ($Resolved.Bucket -and ($Status.bucket -ne $Resolved.Bucket)) {
+        $Status.installed = $false
+        $Status.Add('reasonNotInstalled', 'BucketMismatch')
+    }
+    # Application is installed from different url
+    if ($Status.installed -and $Resolved.Url -and ($Status.url -ne $Resolved.Url)) {
+        $Status.installed = $false
+        $Status.Add('reasonNotInstalled', 'UrlMismatch')
+    }
+
+    # Requested version is not installed
+    if ($Status.installed -and ($Status.version -ne $Resolved.Version)) {
+        $Status.installed = $false
+        $Status.Add('reasonNotInstalled', 'VersionMismatch')
+    }
+}
+
+$reason = $null
+if ($Status.reasonNotInstalled) {
+    $Manifest = $Resolved.ManifestObject
+
+    switch ($Status.reasonNotInstalled) {
+        'BucketMismatch' {
+            $ManifestPath = $Resolved.LocalPath
+            $reason = 'Application installed from different bucket'
+        }
+        'UrlMismatch' {
+            $ManifestPath = $Resolved.Url
+            $reason = 'Application installed from different URL'
+        }
+        'VersionMismatch' {
+            try {
+                $i = installed_manifest $Name $Manifest.version $Global
+                if ($null -eq $i) {
+                    throw 'trigger'
+                }
+                $Manifest = $i
+                $ManifestPath = installed_manifest $Name $Manifest.version $Global -PathOnly
+            } catch {
+                $Status.reasonNotInstalled = 'VersionNotInstalled'
+                $reason = 'Application installed with different version'
+            }
+        }
+    }
+} else {
+    $ManifestPath = (installed_manifest $Name $Manifest.version $Global -PathOnly), $Resolved.LocalPath, $Resolved.Url | Where-Object {
+        -not [String]::IsNullOrEmpty($_)
+    }
+}
+
+$dir = (versiondir $Name $Manifest.version $Global).TrimEnd('\')
+$original_dir = (versiondir $Name $Resolved.Version $Global).TrimEnd('\')
 $persist_dir = (persistdir $Name $Global).TrimEnd('\')
 
-# TODO: Remove debug
-$Status | Format-List
+# TODO: Show update possible
 
 $Message = @("Name: $Name")
-$Message += "Version: $($Status.version)"
+$Message += "Version: $($Manifest.Version)"
 if ($Manifest.description) { $Message += "Description: $($Manifest.description)" }
 if ($Manifest.homepage) { $Message += "Website: $($Manifest.homepage)" }
 
@@ -87,7 +137,14 @@ if ($Manifest.changelog) {
 }
 
 # Manifest file
-$Message += @('Manifest:', "  $ManifestPath")
+$Message += @('Manifest:')
+if ($ManifestPath.Count -gt 1) {
+    foreach ($m in $ManifestPath) {
+        $Message += "  $m"
+    }
+} else {
+    $Message += "  $ManifestPath"
+}
 
 # Show installed versions
 if ($Status.installed) {
@@ -98,14 +155,19 @@ if ($Status.installed) {
         if ($Global) { $dir += ' *global*' }
         $Message += "  $dir"
     }
+
+    $InstallInfo = install_info $Name $Manifest.version $Global
+    $Architecture = $InstallInfo.architecture
 } else {
-    $Message += 'Installed: No'
+    $inst += 'Installed: No'
+    if ($reason) { $inst = "$inst ($reason)" }
+    $Message += $inst
 }
 
 $binaries = @(arch_specific 'bin' $Manifest $Architecture)
 if ($binaries) {
     $Message += 'Binaries:'
-    $add = ''
+    $add = ' '
     foreach ($b in $binaries) {
         $addition = "$b"
         if ($b -is [System.Array]) {
@@ -167,46 +229,3 @@ Write-UserMessage -Message $Message -Output
 show_notes $Manifest $dir $original_dir $persist_dir
 
 exit $ExitCode
-
-if ($Application -match '^(ht|f)tps?://|\\\\') {
-    # check if $Application is a URL or UNC path
-    $url = $Application
-    $Application = appname_from_url $url
-    $global = installed $Application $true
-    $status = app_status $Application $global
-    $manifest = url_manifest $url
-    $manifest_file = $url
-} else {
-    # else $Application is a normal app name
-    $global = installed $Application $true
-    $Application, $bucket, $null = parse_app $Application
-    $status = app_status $Application $global
-    $manifest, $bucket = find_manifest $Application $bucket
-}
-
-if (!$manifest) { Stop-ScoopExecution -Message "Could not find manifest for '$(show_app $Application $bucket)'" }
-
-$install = install_info $Application $status.version $global
-$status.installed = $install.bucket -eq $bucket
-$version_output = $manifest.version
-if (!$manifest_file) {
-    $manifest_file = manifest_path $Application $bucket
-}
-
-$currentVersion = Select-CurrentVersion -AppName $Application -Global:$global
-$dir = versiondir $Application $currentVersion $global
-$original_dir = versiondir $Application $manifest.version $global
-$persist_dir = persistdir $Application $global
-
-if ($status.installed) {
-    $manifest_file = manifest_path $Application $install.bucket
-    if ($install.url) {
-        $manifest_file = $install.url
-    }
-    if ($status.version -eq $manifest.version) {
-        $version_output = $status.version
-    } else {
-        $version_output = "$($status.version) (Update to $($manifest.version) available)"
-    }
-    $Architecture = $install.architecture
-}

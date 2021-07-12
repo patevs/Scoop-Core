@@ -71,13 +71,13 @@ if ($Manifest.license) {
     } else {
         $license = "$($Manifest.license) (https://spdx.org/licenses/$($Manifest.license).html)"
     }
-    $message += "License: $license"
+    $Message += "License: $license"
 }
 
 if ($Manifest.changelog) {
     $ch = $Manifest.changelog
     if (!$ch.StartsWith('http')) {
-        if ($status.installed) {
+        if ($Status.installed) {
             $ch = Join-Path $dir $ch
         } else {
             $ch = "Could be found in file '$ch' inside application directory. Install application to see a recent changes"
@@ -92,10 +92,10 @@ $Message += @('Manifest:', "  $ManifestPath")
 # Show installed versions
 if ($Status.installed) {
     $Message += 'Installed:'
-    $versions = Get-InstalledVersion -AppName $Name -Global:$global
+    $versions = Get-InstalledVersion -AppName $Name -Global:$Global
     $versions | ForEach-Object {
-        $dir = versiondir $Application $_ $global
-        if ($global) { $dir += ' *global*' }
+        $dir = versiondir $Name $_ $Global
+        if ($Global) { $dir += ' *global*' }
         $Message += "  $dir"
     }
 } else {
@@ -133,9 +133,9 @@ if ($env_set) {
     foreach ($es in $env_set | Get-Member -MemberType 'NoteProperty') {
         $value = env $es.Name $Global
         if (!$value) {
-            $value = format $env_set.$($es.name) @{ 'dir' = $dir }
+            $value = format $env_set.$($es.Name) @{ 'dir' = $dir }
         }
-        $Message += "  $($es.name)=$value"
+        $Message += "  $($es.Name)=$value"
     }
 }
 if ($env_add_path) {
@@ -159,9 +159,9 @@ if ($env_add_path) {
 $vers = Find-BucketDirectory -Name $resolved.Bucket | Join-Path -ChildPath "old\$Name" | Get-ChildItem -ErrorAction 'SilentlyContinue' -File |
     Where-Object -Property 'Name' -Match -Value "\.($ALLOWED_MANIFEST_EXTENSION_REGEX)$"
 
-if ($vers.Count -gt 0) { $message += "Available Versions: $($vers.BaseName -join ', ')" }
+if ($vers.Count -gt 0) { $Message += "Available Versions: $($vers.BaseName -join ', ')" }
 
-Write-UserMessage -Message $message -Output
+Write-UserMessage -Message $Message -Output
 
 # Show notes
 show_notes $Manifest $dir $original_dir $persist_dir

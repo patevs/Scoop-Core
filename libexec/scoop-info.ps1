@@ -151,7 +151,7 @@ if ($Status.installed) {
     $InstallInfo = install_info $Name $Manifest.version $Global
     $Architecture = $InstallInfo.architecture
 } else {
-    $inst += 'Installed: No'
+    $inst = 'Installed: No'
     if ($reason) { $inst = "$inst ($reason)" }
     $Message += $inst
 }

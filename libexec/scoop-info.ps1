@@ -41,8 +41,6 @@ $Status = app_status $Name $Global
 $Manifest = $Resolved.ManifestObject
 $ManifestPath = @($Resolved.LocalPath)
 
-$Resolved | Format-List
-
 # Application is installed. Could be from different url/bucket/
 if ($Status.installed) {
     # Application is installed from different bucket

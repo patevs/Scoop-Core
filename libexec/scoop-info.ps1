@@ -89,7 +89,7 @@ if ($Status.reasonNotInstalled) {
         }
     }
 } else {
-    $ManifestPath = (installed_manifest $Name $Manifest.version $Global -PathOnly), $Resolved.LocalPath, $Resolved.Url | Where-Object {
+    $ManifestPath = $Resolved.Url, (installed_manifest $Name $Manifest.version $Global -PathOnly), $Resolved.LocalPath | Where-Object {
         -not [String]::IsNullOrEmpty($_)
     }
 }
@@ -136,13 +136,7 @@ if ($Manifest.changelog) {
 
 # Manifest file
 $Message += @('Manifest:')
-if ($ManifestPath.Count -gt 1) {
-    foreach ($m in $ManifestPath) {
-        $Message += "  $m"
-    }
-} else {
-    $Message += "  $ManifestPath"
-}
+foreach ($m in $ManifestPath) { $Message += "  $m" }
 
 # Show installed versions
 if ($Status.installed) {

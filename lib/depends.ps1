@@ -5,6 +5,7 @@
     @('install', 'install_app')
 ) | ForEach-Object {
     if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {
+        Write-Verbose "Importing $($_[0]) from '$PSCommandPath'"
         . (Join-Path $PSScriptRoot "$($_[0]).ps1")
     }
 }

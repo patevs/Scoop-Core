@@ -3,6 +3,8 @@ param([String] $Command)
 
 Set-StrictMode -Off
 
+$VerbosePreference = "Continue"
+
 if (($PSVersionTable.PSVersion.Major) -lt 5) {
     Write-Host @'
 PowerShell 5 or later is required

@@ -36,7 +36,9 @@
     @('depends', 'script_deps'),
     @('VirusTotal', 'Search-VirusTotal')
 ) | ForEach-Object {
-    if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {        . (Join-Path $PSScriptRoot "..\lib\$($_[0]).ps1")    }
+    if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {
+        Write-Verbose "Importing $($_[0]) from '$PSCommandPath'"
+        . (Join-Path $PSScriptRoot "..\lib\$($_[0]).ps1")    }
 }
 
 # TODO: --no-depends => --independent

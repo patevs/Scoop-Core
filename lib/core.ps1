@@ -934,11 +934,6 @@ function show_app($app, $bucket, $version) {
     return $app
 }
 
-# TODO: Deprecate
-function substitute($entity, [Hashtable] $params, [Bool]$regexEscape = $false) {
-    return Invoke-VariableSubstitution -Entity $entity -Substitutes $params -EscapeRegularExpression:$regexEscape
-}
-
 function format_hash([String] $hash) {
     # Convert base64 encoded hash values
     if ($hash -match '^(?:[A-Za-z\d+\/]{4})*(?:[A-Za-z\d+\/]{2}==|[A-Za-z\d+\/]{3}=|[A-Za-z\d+\/]{4})$') {

@@ -40,6 +40,7 @@
             "    @('VirusTotal', 'Search-VirusTotal')",
             ") | ForEach-Object {",
             "    if (!(Get-Command \\$_[1] -ErrorAction 'Ignore')) {",
+            "        Write-Verbose \"Import of lib '\\$(\\$_[0])' initiated from '\\$PSCommandPath'\"",
             "        . (Join-Path \\$PSScriptRoot \"\\$(\\$_[0]).ps1\")",
             "    }",
             "}",

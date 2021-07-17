@@ -36,12 +36,7 @@
     @('depends', 'script_deps'),
     @('VirusTotal', 'Search-VirusTotal')
 ) | ForEach-Object {
-    if (!(Get-Command $_[1] -ErrorAction 'Ignore')) {
-        Write-Host 'here'
-        . (Join-Path $PSScriptRoot "..\lib\$($_[0]).ps1")
-    } else {
-        Write-Host "Ignoring $($_[1])"
-    }
+    if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {        . (Join-Path $PSScriptRoot "..\lib\$($_[0]).ps1")    }
 }
 
 # TODO: --no-depends => --independent

@@ -1,19 +1,16 @@
+
 @(
-    @('core', 'Test-ScoopDebugEnabled')
+    @('core', 'Test-ScoopDebugEnabled'),
+    @('Helpers', 'New-IssuePrompt')
 ) | ForEach-Object {
-    if (!(Get-Command $_[1] -ErrorAction 'Ignore')) {
-        Write-Host 'here'
-        . (Join-Path $PSScriptRoot "$($_[0]).ps1")
-    } else {
-        Write-Host "Ignoring $($_[1])"
-    }
+    if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {        . (Join-Path $PSScriptRoot "$($_[0]).ps1")    }
 }
 
 function command_files {
     $libExec = Join-Path $PSScriptRoot '..\libexec'
     $shims = Join-Path $SCOOP_ROOT_DIRECTORY 'shims'
 
-    return Get-ChildItem $libExec, $shims | Where-Object -Property Name -Match -Value 'scoop-.*?\.ps1$'
+    return Get-ChildItem $libExec, $shims | Where-Object -Property 'Name' -Match -Value 'scoop-.*?\.ps1$'
 }
 
 function command_name($filename) {

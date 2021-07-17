@@ -1,5 +1,8 @@
-'Helpers', 'commands' | ForEach-Object {
-    . (Join-Path $PSScriptRoot "$_.ps1")
+@(
+    @('Helpers', 'New-IssuePrompt'),
+    @('Helpers', 'New-IssuePrompt')
+) | ForEach-Object {
+    if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {        . (Join-Path $PSScriptRoot "$($_[0]).ps1")    }
 }
 
 # Such format is need to prevent automatic conversion of JSON date https://github.com/Ash258/Scoop-Core/issues/26
@@ -926,92 +929,6 @@ function show_app($app, $bucket, $version) {
     if ($version) { $app = "$app@$version" }
 
     return $app
-}
-
-function last_scoop_update() {
-    # TODO: Config refactor
-    $lastUpdate = Invoke-ScoopCommand 'config' @('lastupdate')
-
-    if ($null -ne $lastUpdate) {
-        try {
-            $lastUpdate = Get-Date ($lastUpdate.Substring(4))
-        } catch {
-            Write-UserMessage -Message 'Config: Incorrect update date format' -Info
-            $lastUpdate = $null
-        }
-    }
-
-    return $lastUpdate
-}
-
-function is_scoop_outdated() {
-    $lastUp = last_scoop_update
-    $now = Get-Date
-    $res = $true
-
-    if ($null -eq $lastUp) {
-        # TODO: Config refactor
-        Invoke-ScoopCommand 'config' @('lastupdate', ($now.ToString($UPDATE_DATE_FORMAT))) | Out-Null
-    } else {
-        $res = $lastUp.AddHours(3) -lt $now.ToLocalTime()
-    }
-
-    return $res
-}
-
-function Invoke-VariableSubstitution {
-    <#
-    .SYNOPSIS
-        Substitute (find and replace) provided parameters in provided entity.
-    .PARAMETER Entity
-        Specifies the entity to be substituted (searched in).
-    .PARAMETER Substitutes
-        Specifies the hashtable providing name and value pairs for "find and replace".
-        Hashtable keys should start with $ (dollar sign). Curly bracket variable syntax will be substituted automatically.
-    .PARAMETER EscapeRegularExpression
-        Specifies to escape regular expressions before replacing values.
-    #>
-    [CmdletBinding()]
-    param(
-        [AllowEmptyCollection()]
-        [AllowNull()]
-        $Entity,
-        [Parameter(Mandatory)]
-        [Alias('Parameters')]
-        [HashTable] $Substitutes,
-        [Switch] $EscapeRegularExpression
-    )
-
-    process {
-        $EscapeRegularExpression | Out-Null # PowerShell/PSScriptAnalyzer#1472
-        $newEntity = $Entity
-
-        if ($null -ne $newEntity) {
-            switch ($newEntity.GetType().Name) {
-                'String' {
-                    $Substitutes.GetEnumerator() | Sort-Object { $_.Name.Length } -Descending | ForEach-Object {
-                        $value = if (($EscapeRegularExpression -eq $false) -or ($null -eq $_.Value)) { $_.Value } else { [Regex]::Escape($_.Value) }
-                        $curly = '${' + $_.Name.TrimStart('$') + '}'
-
-                        $newEntity = $newEntity.Replace($curly, $value)
-                        $newEntity = $newEntity.Replace($_.Name, $value)
-                    }
-                }
-                'Object[]' {
-                    $newEntity = $newEntity | ForEach-Object { Invoke-VariableSubstitution -Entity $_ -Substitutes $Substitutes -EscapeRegularExpression:$regexEscape }
-                }
-                'PSCustomObject' {
-                    $newentity.PSObject.Properties | ForEach-Object { $_.Value = Invoke-VariableSubstitution -Entity $_ -Substitutes $Substitutes -EscapeRegularExpression:$regexEscape }
-                }
-                default {
-                    # This is not needed, but to cover all possible use cases explicitly
-                    $newEntity = $newEntity
-                }
-            }
-        }
-
-        return $newEntity
-    }
 }
 
 # TODO: Deprecate

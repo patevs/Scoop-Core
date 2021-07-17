@@ -10,6 +10,7 @@
 #   -u, --updated       Applications will be sorted by update time.
 
 'core', 'buckets', 'getopt', 'Helpers', 'manifest', 'Versions' | ForEach-Object {
+    Write-Verbose "Import of lib '$_' initiated from '$PSCommandPath'"
     . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
 }
 

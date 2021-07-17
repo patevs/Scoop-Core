@@ -5,6 +5,7 @@ Use 'Write-UserMessage -Warning' to highlight the issue, and follow up with the 
 #>
 
 'core', 'buckets', 'decompress', 'Git', 'Helpers' | ForEach-Object {
+    Write-Verbose "Import of lib '$_' initiated from '$PSCommandPath'"
     . (Join-Path $PSScriptRoot "$_.ps1")
 }
 

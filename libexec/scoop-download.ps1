@@ -10,6 +10,7 @@
 #   -b, --all-architectures         All available files across all architectures will be downloaded.
 
 'getopt', 'help', 'manifest', 'install' | ForEach-Object {
+    Write-Verbose "Import of lib '$_' initiated from '$PSCommandPath'"
     . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
 }
 

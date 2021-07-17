@@ -8,6 +8,7 @@
 #                  Normally when application is being uninstalled, the data defined in persist property/manually persisted are kept.
 
 'core', 'getopt', 'help', 'Helpers', 'install', 'manifest', 'psmodules', 'shortcuts', 'Uninstall', 'Versions' | ForEach-Object {
+    Write-Verbose "Import of lib '$_' initiated from '$PSCommandPath'"
     . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
 }
 

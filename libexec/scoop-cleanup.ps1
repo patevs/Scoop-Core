@@ -10,6 +10,7 @@
 #   -k, --cache        Remove outdated download cache. This will keep only the latest version cached.
 
 'core', 'buckets', 'getopt', 'help', 'Helpers', 'install', 'manifest', 'Versions' | ForEach-Object {
+    Write-Verbose "Import of lib '$_' initiated from '$PSCommandPath'"
     . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
 }
 

@@ -5,6 +5,7 @@
 #   -h, --help      Show help for this command.
 
 'core', 'manifest', 'buckets', 'getopt', 'Versions' | ForEach-Object {
+    Write-Verbose "Import of lib '$_' initiated from '$PSCommandPath'"
     . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
 }
 

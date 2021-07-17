@@ -27,6 +27,7 @@
 #   -h, --help      Show help for this command.
 
 'core', 'buckets', 'getopt', 'help', 'Helpers' | ForEach-Object {
+    Write-Verbose "Import of lib '$_' initiated from '$PSCommandPath'"
     . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
 }
 

@@ -34,6 +34,7 @@
 #   -v, --verbose   Show alias description and table headers (works only for 'list').
 
 'core', 'getopt', 'help', 'Helpers', 'Alias' | ForEach-Object {
+    Write-Verbose "Import of lib '$_' initiated from '$PSCommandPath'"
     . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
 }
 

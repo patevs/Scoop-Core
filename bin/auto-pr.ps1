@@ -52,6 +52,7 @@ param(
 
 $checkverPath = Join-Path $PSScriptRoot 'checkver.ps1'
 'Helpers', 'manifest', 'Git', 'json' | ForEach-Object {
+    Write-Verbose "Import of lib '$_' initiated from '$PSCommandPath'"
     . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
 }
 

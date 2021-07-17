@@ -6,6 +6,7 @@
 #   -a, --arch <32bit|64bit>    Use the specified architecture, if the application's manifest supports it.
 
 'buckets', 'core', 'depends', 'help', 'getopt', 'install', 'manifest', 'Versions' | ForEach-Object {
+    Write-Verbose "Import of lib '$_' initiated from '$PSCommandPath'"
     . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
 }
 

@@ -12,6 +12,7 @@ Upgrade PowerShell: 'https://docs.microsoft.com/en-us/powershell/scripting/insta
 }
 
 'core', 'buckets', 'Helpers', 'commands', 'Git' | ForEach-Object {
+    Write-Verbose "Import of lib '$_' initiated from '$PSCommandPath'"
     . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
 }
 

@@ -1,5 +1,6 @@
 # TODO: Core import is messing up with download progress
 'Helpers' | ForEach-Object { #, 'core' | ForEach-Object {
+    Write-Verbose "Import of lib '$_' initiated from '$PSCommandPath'"
     . (Join-Path $PSScriptRoot "$_.ps1")
 }
 

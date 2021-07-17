@@ -6,6 +6,7 @@
 #   -g, --global         Unhold globally installed application(s).
 
 'core', 'getopt', 'help', 'Helpers', 'Applications' | ForEach-Object {
+    Write-Verbose "Import of lib '$_' initiated from '$PSCommandPath'"
     . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
 }
 

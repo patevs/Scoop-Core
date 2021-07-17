@@ -6,6 +6,7 @@
 #   -f, --format <json|yaml>    Show manifest in specific format. Json will be considered as default when this parameter is not provided.
 
 'core', 'getopt', 'help', 'Helpers', 'install', 'manifest' | ForEach-Object {
+    Write-Verbose "Import of lib '$_' initiated from '$PSCommandPath'"
     . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
 }
 

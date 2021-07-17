@@ -20,6 +20,7 @@
 #    'scoop utils auto-pr --additional-options -Upstream "user/repo:branch" -Skipcheckver -Push' => Execute auto-pr utility with specific upstream string
 
 'core', 'getopt', 'help', 'Helpers' | ForEach-Object {
+    Write-Verbose "Import of lib '$_' initiated from '$PSCommandPath'"
     . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
 }
 

@@ -1,4 +1,5 @@
 'Helpers', 'core', 'manifest', 'install', 'shortcuts', 'psmodules', 'Versions' | ForEach-Object {
+    Write-Verbose "Import of lib '$_' initiated from '$PSCommandPath'"
     . (Join-Path $PSScriptRoot "$_.ps1")
 }
 

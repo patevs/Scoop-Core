@@ -20,6 +20,7 @@
 #   -s, --skip                Skip hash validation (use with caution!).
 
 'core', 'buckets', 'decompress', 'depends', 'getopt', 'help', 'Helpers', 'manifest', 'shortcuts', 'psmodules', 'Update', 'Versions', 'install' | ForEach-Object {
+    Write-Verbose "Import of lib '$_' initiated from '$PSCommandPath'"
     . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
 }
 

@@ -18,37 +18,6 @@ $DEFAULT_UPDATE_BRANCH = 'main'
 # TODO: CONFIG adopt refactor
 $SHOW_UPDATE_LOG = get_config 'show_update_log' $true
 
-function last_scoop_update() {
-    # TODO: Config refactor
-    $lastUpdate = Invoke-ScoopCommand 'config' @('lastupdate')
-
-    if ($null -ne $lastUpdate) {
-        try {
-            $lastUpdate = Get-Date ($lastUpdate.Substring(4))
-        } catch {
-            Write-UserMessage -Message 'Config: Incorrect update date format' -Info
-            $lastUpdate = $null
-        }
-    }
-
-    return $lastUpdate
-}
-
-function is_scoop_outdated() {
-    $lastUp = last_scoop_update
-    $now = Get-Date
-    $res = $true
-
-    if ($null -eq $lastUp) {
-        # TODO: Config refactor
-        Invoke-ScoopCommand 'config' @('lastupdate', ($now.ToString($UPDATE_DATE_FORMAT))) | Out-Null
-    } else {
-        $res = $lastUp.AddHours(3) -lt $now.ToLocalTime()
-    }
-
-    return $res
-}
-
 function Update-ScoopCoreClone {
     <#
     .SYNOPSIS

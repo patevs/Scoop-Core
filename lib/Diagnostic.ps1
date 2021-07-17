@@ -12,7 +12,7 @@ Use 'Write-UserMessage -Warning' to highlight the issue, and follow up with the 
     @('Git', 'Invoke-GitCmd')
 ) | ForEach-Object {
     if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {
-        Write-Verbose "Importing $($_[0]) from '$PSCommandPath'"
+        Write-Verbose "Import of lib '$($_[0])' initiated from '$PSCommandPath'"
         . (Join-Path $PSScriptRoot "$($_[0]).ps1")
     }
 }

@@ -6,7 +6,9 @@
     @('install', 'install_app'),
     @('manifest', 'Resolve-ManifestInformation')
 ) | ForEach-Object {
-    if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {        . (Join-Path $PSScriptRoot "$($_[0]).ps1")    }
+    if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {
+        . (Join-Path $PSScriptRoot "$($_[0]).ps1")
+    }
 }
 
 $DEFAULT_UPDATE_REPO = 'https://github.com/Ash258/Scoop-Core'

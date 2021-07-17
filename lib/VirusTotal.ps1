@@ -4,7 +4,9 @@
     @('Helpers', 'New-IssuePrompt'),
     @('manifest', 'Resolve-ManifestInformation')
 ) | ForEach-Object {
-    if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {        . (Join-Path $PSScriptRoot "$($_[0]).ps1")    }
+    if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {
+        . (Join-Path $PSScriptRoot "$($_[0]).ps1")
+    }
 }
 
 $VT_API_KEY = get_config 'virustotal_api_key'

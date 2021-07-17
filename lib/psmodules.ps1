@@ -2,7 +2,9 @@
     @('core', 'Test-ScoopDebugEnabled'),
     @('Helpers', 'New-IssuePrompt')
 ) | ForEach-Object {
-    if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {        . (Join-Path $PSScriptRoot "$($_[0]).ps1")    }
+    if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {
+        . (Join-Path $PSScriptRoot "$($_[0]).ps1")
+    }
 }
 
 function install_psmodule($manifest, $dir, $global) {

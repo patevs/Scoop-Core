@@ -7,7 +7,9 @@
     @('shortcuts', 'rm_startmenu_shortcuts'),
     @('Versions', 'Clear-InstalledVersion')
 ) | ForEach-Object {
-    if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {        . (Join-Path $PSScriptRoot "$($_[0]).ps1")    }
+    if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {
+        . (Join-Path $PSScriptRoot "$($_[0]).ps1")
+    }
 }
 
 function Uninstall-ScoopApplication {

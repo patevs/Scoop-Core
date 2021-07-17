@@ -4,7 +4,9 @@
     @('decompress', 'Expand-7zipArchive'),
     @('install', 'install_app')
 ) | ForEach-Object {
-    if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {        . (Join-Path $PSScriptRoot "$($_[0]).ps1")    }
+    if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {
+        . (Join-Path $PSScriptRoot "$($_[0]).ps1")
+    }
 }
 
 # Resolve dependencies for the supplied apps, and sort into the correct order

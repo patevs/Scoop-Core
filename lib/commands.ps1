@@ -1,4 +1,3 @@
-
 @(
     @('core', 'Test-ScoopDebugEnabled'),
     @('Helpers', 'New-IssuePrompt')

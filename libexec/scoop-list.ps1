@@ -26,8 +26,6 @@
     }
 }
 
-Reset-Alias
-
 $ExitCode = 0
 $Options, $Query, $_err = getopt $args 'iur' 'installed', 'updated', 'reverse'
 

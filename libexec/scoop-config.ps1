@@ -117,8 +117,6 @@
 
 # TODO: Add --global - Ash258/Scoop-Core#5
 
-Reset-Alias
-
 $ExitCode = 0
 $null, $Config, $_err = getopt $args
 

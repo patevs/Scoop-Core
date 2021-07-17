@@ -59,8 +59,6 @@ TODO: Export:
 }
 #>
 
-Reset-Alias
-
 $ExitCode = 0
 $Options, $null, $_err = getopt $args
 

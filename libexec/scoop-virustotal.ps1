@@ -47,8 +47,6 @@
 # TODO: --no-depends => --independent
 # TODO: Drop --scan??
 
-Reset-Alias
-
 $ExitCode = 0
 $Options, $Applications, $_err = getopt $args 'a:sn' 'arch=', 'scan', 'no-depends'
 

@@ -4,7 +4,6 @@
 # Options:
 #   -h, --help      Show help for this command.
 
-
 @(
     @('core', 'Test-ScoopDebugEnabled'),
     @('getopt', 'getopt'),
@@ -20,8 +19,6 @@
         Write-Host "Ignoring $($_[1])"
     }
 }
-
-Reset-Alias
 
 $ExitCode = 0
 $Options, $Application, $_err = getopt $args

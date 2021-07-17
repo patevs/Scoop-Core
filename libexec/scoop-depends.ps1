@@ -20,8 +20,6 @@
     }
 }
 
-Reset-Alias
-
 $ExitCode = 0
 $Options, $Applications, $_err = getopt $args 'a:' 'arch='
 

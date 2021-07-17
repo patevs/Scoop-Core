@@ -42,8 +42,6 @@
     }
 }
 
-Reset-Alias
-
 # TODO: Export
 # TODO: Cleanup
 function is_installed($app, $global, $version) {

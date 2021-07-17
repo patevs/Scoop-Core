@@ -29,8 +29,6 @@
     }
 }
 
-Reset-Alias
-
 $ExitCode = 0
 $Failed = @()
 $Outdated = @()

@@ -41,8 +41,6 @@
     }
 }
 
-Reset-Alias
-
 $ExitCode = 0
 $Options, $Bucket, $_err = getopt $args
 

@@ -25,8 +25,6 @@
     }
 }
 
-Reset-Alias
-
 #region Parameter validation
 $opt, $application, $err = getopt $args 'sba:u:' 'skip', 'all-architectures', 'arch=', 'utility='
 if ($err) { Stop-ScoopExecution -Message "scoop download: $err" -ExitCode 2 }

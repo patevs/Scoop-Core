@@ -25,8 +25,6 @@
     }
 }
 
-Reset-Alias
-
 $ExitCode = 0
 $LocalResults = @()
 $Options, $Query, $_err = getopt $args 'r' 'remote'

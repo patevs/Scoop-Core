@@ -21,8 +21,6 @@
     }
 }
 
-Reset-Alias
-
 $ExitCode = 0
 $Problems = 0
 $Options, $Applications, $_err = getopt $args 'g' 'global'

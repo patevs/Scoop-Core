@@ -33,8 +33,6 @@
     }
 }
 
-Reset-Alias
-
 $getopt = $args
 $AdditionalArgs = @()
 

@@ -11,7 +11,7 @@
 
 @(
     @('core', 'Test-ScoopDebugEnabled'),
-    @('getopt', 'getopt'),
+    @('getopt', 'Resolve-GetOpt'),
     @('help', 'scoop_help'),
     @('Helpers', 'New-IssuePrompt'),
     @('buckets', 'Get-KnownBucket'),
@@ -24,7 +24,7 @@
 }
 
 $ExitCode = 0
-$Options, $Query, $_err = getopt $args 'iur' 'installed', 'updated', 'reverse'
+$Options, $Query, $_err = Resolve-GetOpt $args 'iur' 'installed', 'updated', 'reverse'
 
 if ($_err) { Stop-ScoopExecution -Message "scoop list: $_err" -ExitCode 2 }
 

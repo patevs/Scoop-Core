@@ -19,7 +19,7 @@
 
 @(
     @('core', 'Test-ScoopDebugEnabled'),
-    @('getopt', 'getopt'),
+    @('getopt', 'Resolve-GetOpt'),
     @('help', 'scoop_help'),
     @('Helpers', 'New-IssuePrompt'),
     @('Cache', 'Show-CachedFileList')
@@ -31,7 +31,7 @@
 
 $ExitCode = 0
 $Problems = 0
-$Options, $Cache, $_err = getopt $args
+$Options, $Cache, $_err = Resolve-GetOpt $args
 
 if ($_err) { Stop-ScoopExecution -Message "scoop cache: $_err" -ExitCode 2 }
 

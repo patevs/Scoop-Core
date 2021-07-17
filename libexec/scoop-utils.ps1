@@ -21,13 +21,14 @@
 
 @(
     @('core', 'Test-ScoopDebugEnabled'),
-    @('getopt', 'getopt'),
+    @('getopt', 'Resolve-GetOpt'),
     @('help', 'scoop_help'),
     @('Helpers', 'New-IssuePrompt')
 ) | ForEach-Object {
     if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {
         Write-Verbose "Import of lib '$($_[0])' initiated from '$PSCommandPath'"
-        . (Join-Path $PSScriptRoot "..\lib\$($_[0]).ps1")    }
+        . (Join-Path $PSScriptRoot "..\lib\$($_[0]).ps1")
+    }
 }
 
 $getopt = $args
@@ -42,7 +43,7 @@ if ($args -contains '--additional-options') {
 
 #region Parameter handling/validation
 $ExitCode = 0
-$Options, $Rem, $_err = getopt $getopt 'b:' 'bucketdir='
+$Options, $Rem, $_err = Resolve-GetOpt $getopt 'b:' 'bucketdir='
 
 if ($_err) { Stop-ScoopExecution -Message "scoop utils: $_err" -ExitCode 2 }
 

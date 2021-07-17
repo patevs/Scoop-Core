@@ -6,7 +6,7 @@
 
 @(
     @('core', 'Test-ScoopDebugEnabled'),
-    @('getopt', 'getopt'),
+    @('getopt', 'Resolve-GetOpt'),
     @('help', 'scoop_help'),
     @('Helpers', 'New-IssuePrompt')
 ) | ForEach-Object {
@@ -16,7 +16,7 @@
 }
 
 $ExitCode = 0
-$Options, $Command, $_err = getopt $args
+$Options, $Command, $_err = Resolve-GetOpt $args
 
 if ($_err) { Stop-ScoopExecution -Message "scoop help: $_err" -ExitCode 2 }
 

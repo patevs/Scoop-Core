@@ -11,7 +11,7 @@
 
 @(
     @('core', 'Test-ScoopDebugEnabled'),
-    @('getopt', 'getopt'),
+    @('getopt', 'Resolve-GetOpt'),
     @('help', 'scoop_help'),
     @('Helpers', 'New-IssuePrompt'),
     @('buckets', 'Get-KnownBucket'),
@@ -24,7 +24,7 @@
 
 $ExitCode = 0
 $LocalResults = @()
-$Options, $Query, $_err = getopt $args 'r' 'remote'
+$Options, $Query, $_err = Resolve-GetOpt $args 'r' 'remote'
 
 if ($_err) { Stop-ScoopExecution -Message "scoop search: $_err" -ExitCode 2 }
 

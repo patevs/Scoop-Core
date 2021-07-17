@@ -103,7 +103,7 @@
 
 @(
     @('core', 'Test-ScoopDebugEnabled'),
-    @('getopt', 'getopt'),
+    @('getopt', 'Resolve-GetOpt'),
     @('help', 'scoop_help'),
     @('Helpers', 'New-IssuePrompt')
 ) | ForEach-Object {
@@ -115,7 +115,7 @@
 # TODO: Add --global - Ash258/Scoop-Core#5
 
 $ExitCode = 0
-$null, $Config, $_err = getopt $args
+$null, $Config, $_err = Resolve-GetOpt $args
 
 if ($_err) { Stop-ScoopExecution -Message "scoop config: $_err" -ExitCode 2 }
 if (!$Config) { $Config = @('show') }

@@ -13,7 +13,7 @@
         "body": [
             "@(",
             "    @('core', 'Test-ScoopDebugEnabled'),",
-            "    @('getopt', 'getopt'),",
+            "    @('getopt', 'Resolve-GetOpt'),",
             "    @('help', 'scoop_help'),",
             "    @('Helpers', 'New-IssuePrompt'),",
             "    @('Alias', 'Get-ScoopAliasPath'),",

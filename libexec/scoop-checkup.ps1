@@ -7,7 +7,7 @@
 
 @(
     @('core', 'Test-ScoopDebugEnabled'),
-    @('getopt', 'getopt'),
+    @('getopt', 'Resolve-GetOpt'),
     @('help', 'scoop_help'),
     @('Helpers', 'New-IssuePrompt'),
     @('Diagnostic', 'Test-DiagMainBucketAdded')
@@ -19,7 +19,7 @@
 
 $ExitCode = 0
 $Problems = 0
-$Options, $null, $_err = getopt $args
+$Options, $null, $_err = Resolve-GetOpt $args
 
 if ($_err) { Stop-ScoopExecution -Message "scoop checkup: $_err" -ExitCode 2 }
 

@@ -12,7 +12,7 @@
 
 @(
     @('core', 'Test-ScoopDebugEnabled'),
-    @('getopt', 'getopt'),
+    @('getopt', 'Resolve-GetOpt'),
     @('help', 'scoop_help'),
     @('Helpers', 'New-IssuePrompt'),
     @('buckets', 'Get-KnownBucket'),
@@ -32,7 +32,7 @@ $Outdated = @()
 $Removed = @()
 $MissingDependencies = @()
 $Onhold = @()
-$null, $null, $_err = getopt $args
+$null, $null, $_err = Resolve-GetOpt $args
 
 if ($_err) { Stop-ScoopExecution -Message "scoop status: $_err" -ExitCode 2 }
 

@@ -6,7 +6,7 @@
 
 @(
     @('core', 'Test-ScoopDebugEnabled'),
-    @('getopt', 'getopt'),
+    @('getopt', 'Resolve-GetOpt'),
     @('help', 'scoop_help'),
     @('Helpers', 'New-IssuePrompt'),
     @('commands', 'Invoke-ScoopCommand')
@@ -17,7 +17,7 @@
 }
 
 $ExitCode = 0
-$Options, $Command, $_err = getopt $args
+$Options, $Command, $_err = Resolve-GetOpt $args
 
 if ($_err) { Stop-ScoopExecution -Message "scoop which: $_err" -ExitCode 2 }
 if (!$Command) { Stop-ScoopExecution -Message 'Parameter <COMMAND> missing' -Usage (my_usage) }

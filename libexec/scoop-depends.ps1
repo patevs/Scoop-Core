@@ -7,7 +7,7 @@
 
 @(
     @('core', 'Test-ScoopDebugEnabled'),
-    @('getopt', 'getopt'),
+    @('getopt', 'Resolve-GetOpt'),
     @('help', 'scoop_help'),
     @('Helpers', 'New-IssuePrompt'),
     @('depends', 'script_deps')
@@ -18,7 +18,7 @@
 }
 
 $ExitCode = 0
-$Options, $Applications, $_err = getopt $args 'a:' 'arch='
+$Options, $Applications, $_err = Resolve-GetOpt $args 'a:' 'arch='
 
 if ($_err) { Stop-ScoopExecution -Message "scoop depends: $_err" -ExitCode 2 }
 

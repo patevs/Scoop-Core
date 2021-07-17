@@ -28,7 +28,7 @@
 
 @(
     @('core', 'Test-ScoopDebugEnabled'),
-    @('getopt', 'getopt'),
+    @('getopt', 'Resolve-GetOpt'),
     @('help', 'scoop_help'),
     @('Helpers', 'New-IssuePrompt'),
     @('buckets', 'Get-KnownBucket')
@@ -39,7 +39,7 @@
 }
 
 $ExitCode = 0
-$Options, $Bucket, $_err = getopt $args
+$Options, $Bucket, $_err = Resolve-GetOpt $args
 
 if ($_err) { Stop-ScoopExecution -Message "scoop bucket: $_err" -ExitCode 2 }
 

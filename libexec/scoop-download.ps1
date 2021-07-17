@@ -9,8 +9,20 @@
 #   -a, --arch <32bit|64bit>        Use the specified architecture.
 #   -b, --all-architectures         All available files across all architectures will be downloaded.
 
-'getopt', 'help', 'manifest', 'install' | ForEach-Object {
-    . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
+@(
+    @('core', 'Test-ScoopDebugEnabled'),
+    @('getopt', 'getopt'),
+    @('help', 'scoop_help'),
+    @('Helpers', 'New-IssuePrompt'),
+    @('install', 'install_app'),
+    @('manifest', 'Resolve-ManifestInformation')
+) | ForEach-Object {
+    if (!(Get-Command $_[1] -ErrorAction 'Ignore')) {
+        Write-Host 'here'
+        . (Join-Path $PSScriptRoot "..\lib\$($_[0]).ps1")
+    } else {
+        Write-Host "Ignoring $($_[1])"
+    }
 }
 
 Reset-Alias

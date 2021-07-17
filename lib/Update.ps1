@@ -1,5 +1,17 @@
-'core', 'Git', 'Helpers', 'buckets', 'install', 'manifest' | ForEach-Object {
-    . (Join-Path $PSScriptRoot "$_.ps1")
+@(
+    @('core', 'Test-ScoopDebugEnabled'),
+    @('Helpers', 'New-IssuePrompt'),
+    @('buckets', 'Get-KnownBucket'),
+    @('Git', 'Invoke-GitCmd'),
+    @('install', 'install_app'),
+    @('manifest', 'Resolve-ManifestInformation')
+) | ForEach-Object {
+    if (!(Get-Command $_[1] -ErrorAction 'Ignore')) {
+        Write-Host 'here'
+        . (Join-Path $PSScriptRoot "$($_[0]).ps1")
+    } else {
+        Write-Host "Ignoring $($_[1])"
+    }
 }
 
 $DEFAULT_UPDATE_REPO = 'https://github.com/Ash258/Scoop-Core'

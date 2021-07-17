@@ -1,5 +1,14 @@
-'core', 'Helpers', 'manifest' | ForEach-Object {
-    . (Join-Path $PSScriptRoot "$_.ps1")
+@(
+    @('core', 'Test-ScoopDebugEnabled'),
+    @('Helpers', 'New-IssuePrompt'),
+    @('manifest', 'Resolve-ManifestInformation')
+) | ForEach-Object {
+    if (!(Get-Command $_[1] -ErrorAction 'Ignore')) {
+        Write-Host 'here'
+        . (Join-Path $PSScriptRoot "$($_[0]).ps1")
+    } else {
+        Write-Host "Ignoring $($_[1])"
+    }
 }
 
 # Creates shortcut for the app in the start menu

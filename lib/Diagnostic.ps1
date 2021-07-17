@@ -4,8 +4,19 @@ Return $true if the test passed, otherwise $false.
 Use 'Write-UserMessage -Warning' to highlight the issue, and follow up with the recommended actions to rectify.
 #>
 
-'core', 'buckets', 'decompress', 'Git', 'Helpers' | ForEach-Object {
-    . (Join-Path $PSScriptRoot "$_.ps1")
+@(
+    @('core', 'Test-ScoopDebugEnabled'),
+    @('Helpers', 'New-IssuePrompt'),
+    @('buckets', 'Get-KnownBucket'),
+    @('decompress', 'Expand-7zipArchive'),
+    @('Git', 'Invoke-GitCmd')
+) | ForEach-Object {
+    if (!(Get-Command $_[1] -ErrorAction 'Ignore')) {
+        Write-Host 'here'
+        . (Join-Path $PSScriptRoot "$($_[0]).ps1")
+    } else {
+        Write-Host "Ignoring $($_[1])"
+    }
 }
 
 function Test-DiagDrive {
@@ -362,7 +373,7 @@ function Test-MainBranchAdoption {
     }
 
     if (($verdict -eq $false) -and ($toFix.Count -gt 0)) {
-        Write-UserMessage -Message "Locally added buckets should be reconfigured to main branch." -Warning
+        Write-UserMessage -Message 'Locally added buckets should be reconfigured to main branch.' -Warning
         Write-UserMessage -Message @(
             '  Fixable with running following commands:'
             ($toFix | ForEach-Object { "    git -C '$($_.path)' checkout main" })
@@ -383,7 +394,7 @@ function Test-ScoopConfigFile {
         Write-UserMessage -Message 'Configuration file does not exists.' -Warn
         Write-UserMessage -Message @(
             '  Fixable with running following commands:'
-            "    scoop update"
+            '    scoop update'
         )
 
         $verdict = $false

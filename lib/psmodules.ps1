@@ -1,10 +1,14 @@
-'core', 'Helpers' | ForEach-Object {
-    . (Join-Path $PSScriptRoot "$_.ps1")
+@(
+    @('core', 'Test-ScoopDebugEnabled'),
+    @('Helpers', 'New-IssuePrompt')
+) | ForEach-Object {
+    if (!(Get-Command $_[1] -ErrorAction 'Ignore')) {
+        Write-Host 'here'
+        . (Join-Path $PSScriptRoot "$($_[0]).ps1")
+    } else {
+        Write-Host "Ignoring $($_[1])"
+    }
 }
-
-$SCOOP_MODULE_DIRECTORY = Join-Path $SCOOP_ROOT_DIRECTORY 'modules'
-$SCOOP_GLOBAL_MODULE_DIRECTORY = Join-Path $SCOOP_GLOBAL_ROOT_DIRECTORY 'modules'
-$modulesdir = $SCOOP_MODULE_DIRECTORY
 
 function install_psmodule($manifest, $dir, $global) {
     $psmodule = $manifest.psmodule

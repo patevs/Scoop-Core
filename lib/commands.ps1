@@ -1,3 +1,14 @@
+@(
+    @('core', 'Test-ScoopDebugEnabled')
+) | ForEach-Object {
+    if (!(Get-Command $_[1] -ErrorAction 'Ignore')) {
+        Write-Host 'here'
+        . (Join-Path $PSScriptRoot "$($_[0]).ps1")
+    } else {
+        Write-Host "Ignoring $($_[1])"
+    }
+}
+
 function command_files {
     $libExec = Join-Path $PSScriptRoot '..\libexec'
     $shims = Join-Path $SCOOP_ROOT_DIRECTORY 'shims'

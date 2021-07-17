@@ -9,8 +9,21 @@
 #                       In case of Installed or Updated, apps will be listed from newest to oldest.
 #   -u, --updated       Applications will be sorted by update time.
 
-'core', 'buckets', 'getopt', 'Helpers', 'manifest', 'Versions' | ForEach-Object {
-    . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
+@(
+    @('core', 'Test-ScoopDebugEnabled'),
+    @('getopt', 'getopt'),
+    @('help', 'scoop_help'),
+    @('Helpers', 'New-IssuePrompt'),
+    @('buckets', 'Get-KnownBucket'),
+    @('manifest', 'Resolve-ManifestInformation'),
+    @('Versions', 'Clear-InstalledVersion')
+) | ForEach-Object {
+    if (!(Get-Command $_[1] -ErrorAction 'Ignore')) {
+        Write-Host 'here'
+        . (Join-Path $PSScriptRoot "..\lib\$($_[0]).ps1")
+    } else {
+        Write-Host "Ignoring $($_[1])"
+    }
 }
 
 Reset-Alias

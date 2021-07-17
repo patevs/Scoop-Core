@@ -1,3 +1,14 @@
+@(
+    @('autoupdate', 'Invoke-Autoupdate')
+) | ForEach-Object {
+    if (!(Get-Command $_[1] -ErrorAction 'Ignore')) {
+        Write-Host 'here'
+        . (Join-Path $PSScriptRoot "$($_[0]).ps1")
+    } else {
+        Write-Host "Ignoring $($_[1])"
+    }
+}
+
 # Convert objects to pretty json
 # Only needed until PowerShell ConvertTo-Json will be improved https://github.com/PowerShell/PowerShell/issues/2736
 # https://github.com/PowerShell/PowerShell/issues/2736 was fixed in pwsh

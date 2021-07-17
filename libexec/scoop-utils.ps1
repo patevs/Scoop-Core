@@ -19,8 +19,18 @@
 #    'scoop utils checkhashes manifest*' --bucketdir ..\..\testbucket\bucket => Check all manifests matching manifest* in provided directory
 #    'scoop utils auto-pr --additional-options -Upstream "user/repo:branch" -Skipcheckver -Push' => Execute auto-pr utility with specific upstream string
 
-'core', 'getopt', 'help', 'Helpers' | ForEach-Object {
-    . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
+@(
+    @('core', 'Test-ScoopDebugEnabled'),
+    @('getopt', 'getopt'),
+    @('help', 'scoop_help'),
+    @('Helpers', 'New-IssuePrompt')
+) | ForEach-Object {
+    if (!(Get-Command $_[1] -ErrorAction 'Ignore')) {
+        Write-Host 'here'
+        . (Join-Path $PSScriptRoot "..\lib\$($_[0]).ps1")
+    } else {
+        Write-Host "Ignoring $($_[1])"
+    }
 }
 
 Reset-Alias

@@ -27,7 +27,6 @@
 ) | ForEach-Object {
         Write-Verbose "Import of lib '$_' initiated from '$PSCommandPath'"
         . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
-    }
 }
 
 $getopt = $args

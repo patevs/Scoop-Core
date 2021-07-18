@@ -20,14 +20,13 @@
 #    'scoop utils auto-pr --additional-options -Upstream "user/repo:branch" -Skipcheckver -Push' => Execute auto-pr utility with specific upstream string
 
 @(
-    @('core', 'Test-ScoopDebugEnabled'),
-    @('getopt', 'Resolve-GetOpt'),
-    @('help', 'scoop_help'),
-    @('Helpers', 'New-IssuePrompt')
+    'core',
+    'getopt',
+    'help',
+    'Helpers'
 ) | ForEach-Object {
-    if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {
-        Write-Verbose "Import of lib '$($_[0])' initiated from '$PSCommandPath'"
-        . (Join-Path $PSScriptRoot "..\lib\$($_[0]).ps1")
+        Write-Verbose "Import of lib '$_' initiated from '$PSCommandPath'"
+        . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
     }
 }
 

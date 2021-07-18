@@ -34,15 +34,14 @@
 #   -v, --verbose   Show alias description and table headers (works only for 'list').
 
 @(
-    @('core', 'Test-ScoopDebugEnabled'),
-    @('getopt', 'Resolve-GetOpt'),
-    @('help', 'scoop_help'),
-    @('Helpers', 'New-IssuePrompt'),
-    @('Alias', 'Get-ScoopAliasPath')
+    'core',
+    'getopt',
+    'help',
+    'Helpers',
+    'Alias'
 ) | ForEach-Object {
-    if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {
-        Write-Verbose "Import of lib '$($_[0])' initiated from '$PSCommandPath'"
-        . (Join-Path $PSScriptRoot "..\lib\$($_[0]).ps1")    }
+    Write-Verbose "Import of lib '$_' initiated from '$PSCommandPath'"
+    . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
 }
 
 # TODO: Add --global - Ash258/Scoop-Core#5

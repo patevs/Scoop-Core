@@ -20,23 +20,22 @@
 #   -s, --skip                Skip hash validation (use with caution!).
 
 @(
-    @('core', 'Test-ScoopDebugEnabled'),
-    @('getopt', 'Resolve-GetOpt'),
-    @('help', 'scoop_help'),
-    @('Helpers', 'New-IssuePrompt'),
-    @('buckets', 'Get-KnownBucket'),
-    @('decompress', 'Expand-7zipArchive'),
-    @('depends', 'script_deps'),
-    @('install', 'install_app'),
-    @('manifest', 'Resolve-ManifestInformation'),
-    @('psmodules', 'install_psmodule'),
-    @('shortcuts', 'rm_startmenu_shortcuts'),
-    @('Update', 'Update-ScoopCoreClone'),
-    @('Versions', 'Clear-InstalledVersion')
+    'core',
+    'getopt',
+    'help',
+    'Helpers',
+    'buckets',
+    'decompress',
+    'depends',
+    'install',
+    'manifest',
+    'psmodules',
+    'shortcuts',
+    'Update',
+    'Versions'
 ) | ForEach-Object {
-    if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {
-        Write-Verbose "Import of lib '$($_[0])' initiated from '$PSCommandPath'"
-        . (Join-Path $PSScriptRoot "..\lib\$($_[0]).ps1")    }
+        Write-Verbose "Import of lib '$_' initiated from '$PSCommandPath'"
+        . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
 }
 
 # TODO: Export

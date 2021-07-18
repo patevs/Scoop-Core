@@ -6,15 +6,14 @@
 #   -g, --global         Unhold globally installed application(s).
 
 @(
-    @('core', 'Test-ScoopDebugEnabled'),
-    @('getopt', 'Resolve-GetOpt'),
-    @('help', 'scoop_help'),
-    @('Helpers', 'New-IssuePrompt'),
-    @('Applications', 'Get-InstalledApplicationInformation')
+    'core',
+    'getopt',
+    'help',
+    'Helpers',
+    'Applications'
 ) | ForEach-Object {
-    if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {
-        Write-Verbose "Import of lib '$($_[0])' initiated from '$PSCommandPath'"
-        . (Join-Path $PSScriptRoot "..\lib\$($_[0]).ps1")    }
+        Write-Verbose "Import of lib '$_' initiated from '$PSCommandPath'"
+        . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
 }
 
 $ExitCode = 0

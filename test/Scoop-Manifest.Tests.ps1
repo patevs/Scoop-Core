@@ -81,7 +81,7 @@ Describe -Tag 'Manifests' 'manifest-validation' {
             $skip_manifest = ($changed_manifests -inotcontains $file.FullName)
             if (($env:CI -ne $true) -or ($changed_manifests -imatch 'schema.json')) { $skip_manifest = $false }
 
-            It "$file" -Skip:$skip_manifest {
+            It $file.BaseName -Skip:$skip_manifest {
                 # TODO: Skip yml for now for schema validation
                 if (!$quota_exceeded -and ($file.Extension -notmatch '\.ya?ml$')) {
                     try {

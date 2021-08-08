@@ -11,4 +11,3 @@ autoupdate:
   url: https://github.com/Ash258/Scoop-Shim/releases/download/$version/shim.exe
   hash:
     url: $url.sha256
-

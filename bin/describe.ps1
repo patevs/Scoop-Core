@@ -55,7 +55,7 @@ foreach ($qq in $Queue) {
     # Get description from homepage
     try {
         $wc = New-Object System.Net.Webclient
-        $wc.Headers.Add('User-Agent', (Get-UserAgent))
+        $wc.Headers.Add('User-Agent', $SHOVEL_USERAGENT)
         $home_html = $wc.DownloadString($manifest.homepage)
     } catch {
         Write-UserMessage -Message "`n$($_.Exception.Message)" -Err

@@ -8,7 +8,7 @@ function find_hash_in_rdf([String] $url, [String] $basename) {
         # Download and parse RDF XML file
         $wc = New-Object System.Net.WebClient
         $wc.Headers.Add('Referer', (strip_filename $url))
-        $wc.Headers.Add('User-Agent', (Get-UserAgent))
+        $wc.Headers.Add('User-Agent', $SHOVEL_USERAGENT)
         $data = $wc.DownloadString($url)
     } catch [System.Net.WebException] {
         Write-UserMessage -Message $_, "URL $url is not valid" -Color 'DarkRed'
@@ -39,7 +39,7 @@ function find_hash_in_textfile([String] $url, [Hashtable] $substitutions, [Strin
     try {
         $wc = New-Object System.Net.WebClient
         $wc.Headers.Add('Referer', (strip_filename $url))
-        $wc.Headers.Add('User-Agent', (Get-UserAgent))
+        $wc.Headers.Add('User-Agent', $SHOVEL_USERAGENT)
         $hashfile = $wc.DownloadString($url)
     } catch [System.Net.WebException] {
         Write-UserMessage -Message $_, "URL $url is not valid" -Color 'DarkRed'
@@ -78,7 +78,7 @@ function find_hash_in_json([String] $url, [Hashtable] $substitutions, [String] $
     try {
         $wc = New-Object System.Net.WebClient
         $wc.Headers.Add('Referer', (strip_filename $url))
-        $wc.Headers.Add('User-Agent', (Get-UserAgent))
+        $wc.Headers.Add('User-Agent', $SHOVEL_USERAGENT)
         $json = $wc.DownloadString($url)
     } catch [System.Net.WebException] {
         Write-UserMessage -Message $_, "URL $url is not valid" -Color 'DarkRed'
@@ -100,7 +100,7 @@ function find_hash_in_xml([String] $url, [Hashtable] $substitutions, [String] $x
     try {
         $wc = New-Object System.Net.WebClient
         $wc.Headers.Add('Referer', (strip_filename $url))
-        $wc.Headers.Add('User-Agent', (Get-UserAgent))
+        $wc.Headers.Add('User-Agent', $SHOVEL_USERAGENT)
         $xml = $wc.DownloadString($url)
     } catch [System.Net.WebException] {
         Write-UserMessage -Message $_, "URL $url is not valid" -Color 'DarkRed'
@@ -136,7 +136,7 @@ function find_hash_in_headers([String] $url) {
         $req = [System.Net.WebRequest]::Create($url)
         $req.Referer = (strip_filename $url)
         $req.AllowAutoRedirect = $false
-        $req.UserAgent = (Get-UserAgent)
+        $req.UserAgent = $SHOVEL_USERAGENT
         $req.Timeout = 2000
         $req.Method = 'HEAD'
         $res = $req.GetResponse()
@@ -259,6 +259,13 @@ function get_hash_for_app([String] $app, $config, [String] $version, [String] $u
         Write-Host ' to verify URL accessibility' -ForegroundColor 'Yellow'
         $request = [System.Net.WebRequest]::Create($url) # TODO: Consider spliting #/ from URL to prevent potential faulty response
         $request.AllowAutoRedirect = $true
+        if ($PSVersionTable.PSVersion.Major -lt 6) {
+            $request.UserAgent = $SHOVEL_USERAGENT
+            $request.Referer = strip_filename $url
+        } else {
+            $request.Headers.Add('Referer', (strip_filename $url))
+            $request.Headers.Add('User-Agent', $SHOVEL_USERAGENT)
+        }
         try {
             $response = $request.GetResponse()
             $response.Close()

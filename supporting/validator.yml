@@ -11,4 +11,3 @@ autoupdate:
   url: https://github.com/Ash258/Scoop-Validator/releases/download/$version/validator.zip
   hash:
     url: $url.sha256
-

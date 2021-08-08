@@ -17,7 +17,7 @@ function find_description($url, $html, $redir = $false) {
     $refresh = meta_refresh $meta $url
     if ($refresh -and !$redir) {
         $wc = New-Object Net.Webclient
-        $wc.Headers.Add('User-Agent', (Get-UserAgent))
+        $wc.Headers.Add('User-Agent', $SHOVEL_USERAGENT)
         $html = $wc.DownloadString($refresh)
 
         return find_description $refresh $html $true

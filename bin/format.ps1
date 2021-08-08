@@ -188,7 +188,7 @@ foreach ($gci in Get-ChildItem $Dir "$App.*" -File) {
     # License has to follow immediatelly after homepage. User most likely decided to install app after reading description or visiting homepage
     # Notes contains useful information for user. When they cat the manifest it has to be visible on top
     # Changelog is additional not required information
-    '$schema', '##', 'version', 'description', 'homepage', 'license', 'notes', 'changelog', 'suggest', 'depends' | ForEach-Object {
+    '$schema', '##', 'version', 'description', 'homepage', 'license', 'changelog', 'notes', 'suggest', 'depends' | ForEach-Object {
         $val = $manifest.$_
         if ($val) {
             $newManifest | Add-Member -MemberType 'NoteProperty' -Name $_ -Value $val

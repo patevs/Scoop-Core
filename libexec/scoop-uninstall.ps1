@@ -11,11 +11,9 @@
     . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
 }
 
-Reset-Alias
-
 $ExitCode = 0
 $Problems = 0
-$Options, $Applications, $_err = getopt $args 'gp' 'global', 'purge'
+$Options, $Applications, $_err = Resolve-GetOpt $args 'gp' 'global', 'purge'
 
 if ($_err) { Stop-ScoopExecution -Message "scoop uninstall: $_err" -ExitCode 2 }
 
@@ -44,12 +42,8 @@ foreach ($explode in $Applications) {
         $result = Uninstall-ScoopApplication -App $app -Global:$gl -Purge:$Purge -Older
     } catch {
         ++$Problems
-
-        $title, $body = $_.Exception.Message -split '\|-'
-        if (!$body) { $body = $title }
-        Write-UserMessage -Message $body -Err
         debug $_.InvocationInfo
-        if ($title -ne 'Ignore' -and ($title -ne $body)) { New-IssuePrompt -Application $app -Bucket $bucket -Title $title -Body $body }
+        New-IssuePromptFromException -ExceptionMessage $_.Exception.Message -Application $app -Bucket $bucket
 
         continue
     }

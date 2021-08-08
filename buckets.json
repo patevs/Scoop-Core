@@ -1,4 +1,5 @@
 {
+    "Base": "https://github.com/shovel-org/Base",
     "main": "https://github.com/ScoopInstaller/Main",
     "extras": "https://github.com/lukesampson/scoop-extras",
     "versions": "https://github.com/ScoopInstaller/Versions",

@@ -23,8 +23,6 @@
     . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
 }
 
-Reset-Alias
-
 # TODO: Export
 # TODO: Cleanup
 function is_installed($app, $global, $version) {
@@ -60,7 +58,7 @@ function is_installed($app, $global, $version) {
     return $false
 }
 
-$opt, $apps, $err = getopt $args 'gfiksa:' 'global', 'force', 'independent', 'no-cache', 'skip', 'arch='
+$opt, $apps, $err = Resolve-GetOpt $args 'gfiksa:' 'global', 'force', 'independent', 'no-cache', 'skip', 'arch='
 if ($err) { Stop-ScoopExecution -Message "scoop install: $err" -ExitCode 2 }
 
 $exitCode = 0
@@ -117,11 +115,7 @@ if (!$independent) {
     try {
         $apps = install_order $apps $architecture # Add dependencies
     } catch {
-        $title, $body = $_.Exception.Message -split '\|-'
-        Write-UserMessage -Message $body -Err
-        if ($title -ne 'Ignore') {
-            New-IssuePrompt -Application $app -Title $title -Body $body
-        }
+        New-IssuePromptFromException -ExceptionMessage $_.Exception.Message
     }
 }
 
@@ -156,6 +150,7 @@ foreach ($app in $apps) {
         continue
     }
 
+    # TODO: Resolve-ManifestInformation
     $cleanApp, $bucket = parse_app $app
 
     # Prevent checking of already installed applications if specific version was provided.
@@ -178,11 +173,8 @@ foreach ($app in $apps) {
         # Register failed dependencies
         if ($explicit_apps -notcontains $app) { $failedDependencies += $app } else { $failedApplications += $app }
 
-        $title, $body = $_.Exception.Message -split '\|-'
-        if (!$body) { $body = $title }
-        Write-UserMessage -Message $body -Err
         debug $_.InvocationInfo
-        if ($title -ne 'Ignore' -and ($title -ne $body)) { New-IssuePrompt -Application $cleanApp -Bucket $bucket -Title $title -Body $body }
+        New-IssuePromptFromException -ExceptionMessage $_.Exception.Message -Application $cleanApp -Bucket $bucket
 
         continue
     }
@@ -190,8 +182,15 @@ foreach ($app in $apps) {
 
 show_suggestions $suggested
 
-if ($failedApplications) { Write-UserMessage -Message "These applications failed to install: $($failedApplications -join ', ')" -Err }
-if ($failedDependencies) { Write-UserMessage -Message "These dependencies failed to install: $($failedDependencies -join ', ')" -Err }
+if ($failedApplications) {
+    $pl = pluralize $failedApplications.Count 'This application' 'These applications'
+    Write-UserMessage -Message "$pl failed to install: $($failedApplications -join ', ')" -Err
+}
+
+if ($failedDependencies) {
+    $pl = pluralize $failedDependencies.Count 'This dependency' 'These dependencies'
+    Write-UserMessage -Message "$pl failed to install: $($failedDependencies -join ', ')" -Err
+}
 
 if ($problems -gt 0) { $exitCode = 10 + $problems }
 

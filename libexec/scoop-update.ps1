@@ -18,11 +18,9 @@
     . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
 }
 
-Reset-Alias
-
 $ExitCode = 0
 $Problems = 0
-$Options, $Applications, $_err = getopt $args 'gfiksq' 'global', 'force', 'independent', 'no-cache', 'skip', 'quiet'
+$Options, $Applications, $_err = Resolve-GetOpt $args 'gfiksq' 'global', 'force', 'independent', 'no-cache', 'skip', 'quiet'
 
 if ($_err) { Stop-ScoopExecution -Message "scoop update: $_err" -ExitCode 2 }
 
@@ -87,21 +85,17 @@ if (!$Applications) {
             Update-App -App $out[0] -Global:$out[1] -Suggested @{ } -Quiet:$Quiet -Independent:$Independent -SkipCache:(!$UseCache) -SkipHashCheck:(!$CheckHash)
         } catch {
             ++$Problems
-
             $failedApplications += $out[0]
-
-            $title, $body = $_.Exception.Message -split '\|-'
-            if (!$body) { $body = $title }
-            Write-UserMessage -Message $body -Err
             debug $_.InvocationInfo
-            if ($title -ne 'Ignore' -and ($title -ne $body)) { New-IssuePrompt -Application $out[0] -Bucket $out[2] -Title $title -Body $body }
-
-            continue
+            New-IssuePromptFromException -ExceptionMessage $_.Exception.Message -Application $out[0] -Bucket $out[2]
         }
     }
 }
 
-if ($failedApplications) { Write-UserMessage -Message "These applications failed to update: $($failedApplications -join ', ')" -Err }
+if ($failedApplications) {
+    $pl = pluralize $failedApplications.Count 'This application' 'These applications'
+    Write-UserMessage -Message "$pl failed to update: $($failedApplications -join ', ')" -Err
+}
 
 if ($Problems -gt 0) { $ExitCode = 10 + $Problems }
 

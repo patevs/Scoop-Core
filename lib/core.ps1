@@ -39,8 +39,28 @@ function Optimize-SecurityProtocol {
     }
 }
 
+# Shovel/1.0 (+https://shovel.ash258.com) PowerShell/7.2 (Windows NT 10.0; Win64; x64; Core)
+# Shovel/1.0 (+https://shovel.ash258.com) PowerShell/7.2 (Linux; Linux 5.8.0-1032-raspi #35-Ubuntu SMP PREEMPT Wed Jul 14 10:51:21 UTC 2021;)
 function Get-UserAgent {
-    return "Scoop/1.0 (+http://scoop.sh/) PowerShell/$($PSVersionTable.PSVersion.Major).$($PSVersionTable.PSVersion.Minor) (Windows NT $([System.Environment]::OSVersion.Version.Major).$([System.Environment]::OSVersion.Version.Minor); $(if($env:PROCESSOR_ARCHITECTURE -eq 'AMD64'){'Win64; x64; '})$(if($env:PROCESSOR_ARCHITEW6432 -eq 'AMD64'){'WOW64; '})$PSEdition)"
+    $shovel = 'Shovel/1.0 (+https://shovel.ash258.com)'
+    $powershellVersion = "PowerShell/$($PSVersionTable.PSVersion.Major).$($PSVersionTable.PSVersion.Minor)"
+    $system = "Windows NT $([System.Environment]::OSVersion.Version)"
+    $arch = ''
+
+    switch ($env:PROCESSOR_ARCHITECTURE) {
+        'AMD64' { $arch = 'Win64; x64;' }
+    }
+
+    if (Test-IsUnix) {
+        $system = Invoke-SystemComSpecCommand -Unix 'uname -s'
+        $arch = Invoke-SystemComSpecCommand -Unix 'uname -srv'
+        $arch = "$arch;"
+    }
+
+    $useragent = "$shovel $powershellVersion ($system; $arch)"
+    # debug $useragent
+
+    return $useragent
 }
 
 function Show-DeprecatedWarning {
@@ -83,9 +103,7 @@ function Invoke-SystemComSpecCommand {
     #>
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)]
         [String] $Windows,
-        [Parameter(Mandatory)]
         [String] $Unix
     )
 
@@ -97,6 +115,8 @@ function Invoke-SystemComSpecCommand {
             $shell = $env:ComSpec
             $parameters = @('/d', '/c', $Windows)
         }
+
+        if (!$Windows -and !$Unix) { throw 'No command provided' }
 
         $debugShell = "& ""$shell"" $($parameters -join ' ')"
         debug $debugShell
@@ -609,9 +629,9 @@ function Invoke-ExternalCommand {
 
 function dl($url, $to) {
     $wc = New-Object System.Net.Webclient
-    $wc.headers.add('Referer', (strip_filename $url))
-    $wc.Headers.Add('User-Agent', (Get-UserAgent))
-    $wc.downloadFile($url, $to)
+    $wc.Headers.Add('Referer', (strip_filename $url))
+    $wc.Headers.Add('User-Agent', $SHOVEL_USERAGENT)
+    $wc.DownloadFile($url, $to)
 }
 
 function env($name, $global, $val = '__get') {
@@ -929,97 +949,6 @@ function show_app($app, $bucket, $version) {
     return $app
 }
 
-function last_scoop_update() {
-    # TODO: Config refactor
-    $lastUpdate = Invoke-ScoopCommand 'config' @('lastupdate')
-
-    if ($null -ne $lastUpdate) {
-        try {
-            $lastUpdate = Get-Date ($lastUpdate.Substring(4))
-        } catch {
-            Write-UserMessage -Message 'Config: Incorrect update date format' -Info
-            $lastUpdate = $null
-        }
-    }
-
-    return $lastUpdate
-}
-
-function is_scoop_outdated() {
-    $lastUp = last_scoop_update
-    $now = Get-Date
-    $res = $true
-
-    if ($null -eq $lastUp) {
-        # TODO: Config refactor
-        Invoke-ScoopCommand 'config' @('lastupdate', ($now.ToString($UPDATE_DATE_FORMAT))) | Out-Null
-    } else {
-        $res = $lastUp.AddHours(3) -lt $now.ToLocalTime()
-    }
-
-    return $res
-}
-
-function Invoke-VariableSubstitution {
-    <#
-    .SYNOPSIS
-        Substitute (find and replace) provided parameters in provided entity.
-    .PARAMETER Entity
-        Specifies the entity to be substituted (searched in).
-    .PARAMETER Substitutes
-        Specifies the hashtable providing name and value pairs for "find and replace".
-        Hashtable keys should start with $ (dollar sign). Curly bracket variable syntax will be substituted automatically.
-    .PARAMETER EscapeRegularExpression
-        Specifies to escape regular expressions before replacing values.
-    #>
-    [CmdletBinding()]
-    param(
-        [AllowEmptyCollection()]
-        [AllowNull()]
-        $Entity,
-        [Parameter(Mandatory)]
-        [Alias('Parameters')]
-        [HashTable] $Substitutes,
-        [Switch] $EscapeRegularExpression
-    )
-
-    process {
-        $EscapeRegularExpression | Out-Null # PowerShell/PSScriptAnalyzer#1472
-        $newEntity = $Entity
-
-        if ($null -ne $newEntity) {
-            switch ($newEntity.GetType().Name) {
-                'String' {
-                    $Substitutes.GetEnumerator() | Sort-Object { $_.Name.Length } -Descending | ForEach-Object {
-                        $value = if (($EscapeRegularExpression -eq $false) -or ($null -eq $_.Value)) { $_.Value } else { [Regex]::Escape($_.Value) }
-                        $curly = '${' + $_.Name.TrimStart('$') + '}'
-
-                        $newEntity = $newEntity.Replace($curly, $value)
-                        $newEntity = $newEntity.Replace($_.Name, $value)
-                    }
-                }
-                'Object[]' {
-                    $newEntity = $newEntity | ForEach-Object { Invoke-VariableSubstitution -Entity $_ -Substitutes $Substitutes -EscapeRegularExpression:$regexEscape }
-                }
-                'PSCustomObject' {
-                    $newentity.PSObject.Properties | ForEach-Object { $_.Value = Invoke-VariableSubstitution -Entity $_ -Substitutes $Substitutes -EscapeRegularExpression:$regexEscape }
-                }
-                default {
-                    # This is not needed, but to cover all possible use cases explicitly
-                    $newEntity = $newEntity
-                }
-            }
-        }
-
-        return $newEntity
-    }
-}
-
-# TODO: Deprecate
-function substitute($entity, [Hashtable] $params, [Bool]$regexEscape = $false) {
-    return Invoke-VariableSubstitution -Entity $entity -Substitutes $params -EscapeRegularExpression:$regexEscape
-}
-
 function format_hash([String] $hash) {
     # Convert base64 encoded hash values
     if ($hash -match '^(?:[A-Za-z\d+\/]{4})*(?:[A-Za-z\d+\/]{2}==|[A-Za-z\d+\/]{3}=|[A-Za-z\d+\/]{4})$') {
@@ -1122,11 +1051,6 @@ function Resolve-ArchitectureParameter {
 }
 
 #region Deprecated
-function reset_aliases() {
-    Show-DeprecatedWarning $MyInvocation 'Reset-Alias'
-    Reset-Alias
-}
-
 function file_path($app, $file) {
     Show-DeprecatedWarning $MyInvocation 'Get-AppFilePath'
     return Get-AppFilePath -App $app -File $file
@@ -1150,6 +1074,8 @@ function fullpath($path) {
 # Note: Github disabled TLS 1.0 support on 2018-02-23. Need to enable TLS 1.2
 #       for all communication with api.github.com
 Optimize-SecurityProtocol
+
+$SHOVEL_USERAGENT = Get-UserAgent
 
 # TODO: Drop
 $c = get_config 'rootPath'

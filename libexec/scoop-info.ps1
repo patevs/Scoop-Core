@@ -10,15 +10,13 @@
     . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
 }
 
-Reset-Alias
-
 $ExitCode = 0
-$Options, $Application, $_err = getopt $args 'a:' 'arch='
 # $Options, $Application, $_err = getopt $args 'a:gi' 'arch=', 'global', 'ignore-installed'
 # TODO: Add some --remote parameter to not use installed manifest
 #   -i, --ignore-installed >    Remote manifest will be used to get all required information. Ignoring locally installed manifest (scoop-manifest.json).
 # TODO: Add --global
 #   -g, --global                Show information about globally installed application.
+$Options, $Application, $_err = Resolve-GetOpt $args 'a:' 'arch='
 
 if ($_err) { Stop-ScoopExecution -Message "scoop info: $_err" -ExitCode 2 }
 if (!$Application) { Stop-ScoopExecution -Message 'Parameter <APP> missing' -Usage (my_usage) }

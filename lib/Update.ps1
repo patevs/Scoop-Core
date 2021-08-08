@@ -1,4 +1,4 @@
-'core', 'Git', 'Helpers', 'buckets', 'install', 'manifest' | ForEach-Object {
+'core', 'Git', 'Helpers', 'buckets', 'install', 'manifest', 'commands' | ForEach-Object {
     . (Join-Path $PSScriptRoot "$_.ps1")
 }
 
@@ -120,6 +120,37 @@ function Update-ScoopLocalBucket {
     }
 }
 
+function last_scoop_update() {
+    # TODO: Config refactor
+    $lastUpdate = Invoke-ScoopCommand 'config' @('lastupdate')
+
+    if ($null -ne $lastUpdate) {
+        try {
+            $lastUpdate = Get-Date ($lastUpdate.Substring(4))
+        } catch {
+            Write-UserMessage -Message 'Config: Incorrect update date format' -Info
+            $lastUpdate = $null
+        }
+    }
+
+    return $lastUpdate
+}
+
+function is_scoop_outdated() {
+    $lastUp = last_scoop_update
+    $now = Get-Date
+    $res = $true
+
+    if ($null -eq $lastUp) {
+        # TODO: Config refactor
+        Invoke-ScoopCommand 'config' @('lastupdate', ($now.ToString($UPDATE_DATE_FORMAT))) | Out-Null
+    } else {
+        $res = $lastUp.AddHours(3) -lt $now.ToLocalTime()
+    }
+
+    return $res
+}
+
 function Update-Scoop {
     <#
     .SYNOPSIS
@@ -168,6 +199,12 @@ function Update-Scoop {
     if ((Get-LocalBucket) -notcontains 'main') {
         Write-UserMessage -Message 'The main bucket has been separated', 'Adding main bucket...' -Output
         Add-Bucket -Name 'main'
+    }
+
+    # Add Base bucket if not already added
+    if ((Get-LocalBucket) -notcontains 'Base') {
+        Write-UserMessage -Message 'New Base bucket was introduces, which will replace main', 'Adding Base bucket...' -Output
+        Add-Bucket -Name 'Base'
     }
 
     ensure_scoop_in_path
@@ -240,15 +277,13 @@ function Update-App {
 
     # TODO: Could this ever happen?
     if (!$Force -and ($oldVersion -eq $version)) {
-        if (!$quiet) { Write-UserMessage -Message "The Latest version of '$App' ($version) is already installed." -Warning }
-        return
+        throw [ScoopException] "The Latest version of '$App' ($version) is already installed." # TerminatingError thrown
     }
 
     # TODO:???
     # TODO: Case when bucket no longer have this application?
     if (!$version) {
-        Write-UserMessage -Message "No manifest available for '$App'" -Err
-        return
+        throw [ScoopException] "No manifest available for '$App'" # TerminatingError thrown
     }
 
     $manifest = manifest $App $bucket $url
@@ -291,7 +326,7 @@ function Update-App {
     #endregion Workaround of #2220
 
     $result = Uninstall-ScoopApplication -App $App -Global:$Global
-    if ($result -eq $false) { return }
+    if ($result -eq $false) { throw [ScoopException] 'Ignore' }
 
     # Rename current version to .old if same version is installed
     if ($Force -and ($oldVersion -eq $version)) {
@@ -307,6 +342,7 @@ function Update-App {
         }
     }
 
+    # TODO: Adopt Resolve-ManifestInformation???
     $toUpdate = if ($install.url) { $install.url } else { "$bucket/$App" }
 
     # Error catching should be handled on upper scope

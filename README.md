@@ -71,6 +71,7 @@ See the [runat](https://github.com/ScoopInstaller/Main/blob/master/bucket/runat.
 
 The following buckets are known to Shovel:
 
+- [Base](https://github.com/shovel-org/Base) - Rebuild of main bucket suited for Shovel usage; Archived + arm64 version support
 - [main](https://github.com/ScoopInstaller/Main) - Default bucket for the most common command line utilities
 - [extras](https://github.com/lukesampson/scoop-extras) - GUI applications
 - [nerd-fonts](https://github.com/matthewjberger/scoop-nerd-fonts) - Nerd Fonts

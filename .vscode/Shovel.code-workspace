@@ -41,6 +41,10 @@
             "name": "Buckets/NirSoft",
         },
         {
+            "path": "../../Base",
+            "name": "Buckets/Base",
+        },
+        {
             "path": "../../Extras",
             "name": "Buckets/Extras",
         },
@@ -111,6 +115,7 @@
                 "url": "https://raw.githubusercontent.com/Ash258/Scoop-Core/NEW/schema.json",
                 "fileMatch": [
                     "bucket/*.json*",
+                    "bucket/old/**/*.json",
                     "deprecated/*.json*",
                     "TODO/*.json*",
                     "supporting/*.json*",
@@ -118,11 +123,36 @@
             },
         ],
         "task.autoDetect": "off",
-        "terminal.integrated.shell.windows": "powershell.exe",
-        "terminal.integrated.shellArgs.windows": [
-            "-NoLogo",
-            "-NoExit",
-        ],
+        "terminal.integrated.defaultProfile.windows": "PowerShell Core (Preview)",
+        "terminal.integrated.profiles.windows": {
+            "PowerShell": {
+                "path": "powershell.exe",
+                "args": [
+                    "-NoLogo",
+                    "-NoExit",
+                ],
+            },
+            "PowerShell Core": {
+                "path": [
+                    "${env:SCOOP_GLOBAL}\\apps\\pwsh\\current\\pwsh.exe",
+                    "${env:SCOOP}\\apps\\pwsh\\current\\pwsh.exe",
+                ],
+                "args": [
+                    "-NoLogo",
+                    "-NoExit",
+                ],
+            },
+            "PowerShell Core (Preview)": {
+                "path": [
+                    "${env:SCOOP_GLOBAL}\\apps\\pwsh-preview\\current\\pwsh.exe",
+                    "${env:SCOOP}\\apps\\pwsh-preview\\current\\pwsh.exe",
+                ],
+                "args": [
+                    "-NoLogo",
+                    "-NoExit",
+                ],
+            },
+        },
         "terminal.integrated.windowsEnableConpty": true,
         "terminals.terminals": [
             {
@@ -211,6 +241,7 @@
             ],
             "https://raw.githubusercontent.com/Ash258/Scoop-Core/NEW/schema.json": [
                 "bucket/*.y*ml",
+                "bucket/old/**/*.y*ml",
                 "deprecated/*.y*ml",
                 "TODO/*.y*ml",
                 "supporting/*.y*ml",

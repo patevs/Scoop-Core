@@ -34,7 +34,7 @@ function Get-VirusTotalResult {
     $detectionUrl = "https://www.virustotal.com/#/file/$hash/detection"
 
     $wc = New-Object System.Net.Webclient
-    $wc.Headers.Add('User-Agent', (Get-UserAgent))
+    $wc.Headers.Add('User-Agent', $SHOVEL_USERAGENT)
     $wc.Headers.Add('x-apikey', $VT_API_KEY)
 
     try {

@@ -126,7 +126,7 @@ Describe 'Manifests operations' -Tag 'Scoop' {
 
             It 'Error handling' {
                 { manifest_path 'invalid_wget' 'main' | Resolve-ManifestInformation } | Should -Throw 'Not a valid manifest'
-                ( { manifest_path 'broken_wget' 'main' | Resolve-ManifestInformation } | Should -Throw -Passthru).Exception.Message | Should -BeLike 'File is not a valid manifest*'
+                ( { manifest_path 'broken_wget' 'main' | Resolve-ManifestInformation } | Should -Throw -PassThru).Exception.Message | Should -BeLike 'File is not a valid manifest*'
             }
         }
 

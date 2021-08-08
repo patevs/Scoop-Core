@@ -238,7 +238,7 @@ function dl_with_cache_aria2($app, $version, $manifest, $architecture, $dir, $co
     # aria2 options
     $options = @(
         "--input-file='$urlstxt'"
-        "--user-agent='$(Get-UserAgent)'"
+        "--user-agent='$SHOVEL_USERAGENT'"
         '--allow-overwrite=true'
         '--auto-file-renaming=false'
         "--retry-wait=$(get_config 'aria2-retry-wait' 2)"
@@ -394,7 +394,7 @@ function dl($url, $to, $cookies, $progress) {
     $reqUrl = ($url -split '#')[0]
     $wreq = [System.Net.WebRequest]::Create($reqUrl)
     if ($wreq -is [System.Net.HttpWebRequest]) {
-        $wreq.UserAgent = Get-UserAgent
+        $wreq.UserAgent = $SHOVEL_USERAGENT
         # Do not send referer to sourceforge, portbleapps
         if (($url -notlike '*sourceforge.net*') -and ($url -notlike '*portableapps.com*')) {
             $wreq.Referer = strip_filename $url

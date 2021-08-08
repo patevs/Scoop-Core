@@ -81,6 +81,7 @@ function ConvertTo-Manifest {
             }
             { $_ -in 'yaml', 'yml' } {
                 $content = ConvertTo-CloudBaseYaml -Data $Manifest
+                $content = $content.TrimEnd("`r`n") # For some reason it produces two line endings at the end
             }
             default {
                 Write-UserMessage -Message "Not specific manifest extension ($_). Falling back to json" -Info
@@ -209,7 +210,7 @@ function Get-RemoteManifest {
         try {
             # TODO: Implement proxy
             $wc = New-Object System.Net.Webclient
-            $wc.Headers.Add('User-Agent', (Get-UserAgent))
+            $wc.Headers.Add('User-Agent', $SHOVEL_USERAGENT)
             $str = $wc.DownloadString($URL)
         } catch [System.Management.Automation.MethodInvocationException] {
             Write-UserMessage -Message "${URL}: $($_.Exception.InnerException.Message)" -Warning
@@ -467,7 +468,7 @@ function url_manifest($url) {
     $str = $null
     try {
         $wc = New-Object System.Net.Webclient
-        $wc.Headers.Add('User-Agent', (Get-UserAgent))
+        $wc.Headers.Add('User-Agent', $SHOVEL_USERAGENT)
         $str = $wc.DownloadString($url)
     } catch [System.Management.Automation.MethodInvocationException] {
         Write-UserMessage -Message "${url}: $($_.Exception.InnerException.Message)" -Warning
@@ -496,7 +497,7 @@ function manifest($app, $bucket, $url) {
 function save_installed_manifest($app, $bucket, $dir, $url) {
     if ($url) {
         $wc = New-Object System.Net.Webclient
-        $wc.Headers.Add('User-Agent', (Get-UserAgent))
+        $wc.Headers.Add('User-Agent', $SHOVEL_USERAGENT)
         # TODO: YAML
         Join-Path $dir 'scoop-manifest.json' | Out-UTF8Content -Content ($wc.DownloadString($url))
     } else {

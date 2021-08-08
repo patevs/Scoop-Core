@@ -15,8 +15,6 @@ Upgrade PowerShell: 'https://docs.microsoft.com/en-us/powershell/scripting/insta
     . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
 }
 
-Reset-Alias
-
 $ExitCode = 0
 
 # Powershell automatically bind bash like short parameters as $args, and does not put it in $Command parameter
@@ -43,6 +41,7 @@ $commandHelp = !$scoopHelp -and $validCommand -and (($args.Contains('--help')) -
 if ($version) {
     Write-UserMessage -Output -Message @(
         "PowerShell version: $($PSVersionTable.PSVersion)"
+        "Useragent: $SHOVEL_USERAGENT"
         'Current Scoop (Shovel) version:'
     )
     Invoke-GitCmd -Command 'VersionLog' -Repository (versiondir 'scoop' 'current')

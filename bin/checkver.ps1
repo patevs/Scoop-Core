@@ -262,7 +262,7 @@ foreach ($q in $Queue) {
 
     $wc = New-Object System.Net.Webclient
     $ua = $json.checkver.useragent
-    $ua = if ($ua) { Invoke-VariableSubstitution -Entity $ua -Substitutes $substitutions } else { Get-UserAgent }
+    $ua = if ($ua) { Invoke-VariableSubstitution -Entity $ua -Substitutes $substitutions } else { $SHOVEL_USERAGENT }
     $wc.Headers.Add('User-Agent', $ua)
 
     Register-ObjectEvent $wc DownloadStringCompleted -ErrorAction Stop | Out-Null

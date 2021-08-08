@@ -8,10 +8,8 @@
     . (Join-Path $PSScriptRoot "..\lib\$_.ps1")
 }
 
-Reset-Alias
-
 $ExitCode = 0
-$Options, $Application, $_err = getopt $args
+$Options, $Application, $_err = Resolve-GetOpt $args
 
 if ($_err) { Stop-ScoopExecution -Message "scoop home: $_err" -ExitCode 2 }
 if (!$Application) { Stop-ScoopExecution -Message 'Parameter <APP> missing' -Usage (my_usage) }
@@ -24,10 +22,8 @@ $resolved = $null
 try {
     $resolved = Resolve-ManifestInformation -ApplicationQuery $Application
 } catch {
-    $title, $body = $_.Exception.Message -split '\|-'
-    if (!$body) { $body = $title }
-    Write-UserMessage -Message $body -Err
     debug $_.InvocationInfo
+    New-IssuePromptFromException -ExceptionMessage $_.Exception.Message
 
     $ExitCode = 3
 }

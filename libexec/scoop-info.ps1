@@ -136,6 +136,10 @@ if ($Manifest.changelog) {
 $Message += @('Manifest:')
 foreach ($m in $ManifestPath) { $Message += "  $m" }
 
+$arm64Support = 'No'
+if ($Manifest.architecture.arm64) { $arm64Support = 'Yes' }
+$Message += "arm64 Support: $arm64Support"
+
 # Show installed versions
 if ($Status.installed) {
     $Message += 'Installed:'

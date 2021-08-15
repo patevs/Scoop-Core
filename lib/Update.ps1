@@ -288,7 +288,14 @@ function Update-App {
 
     $manifest = manifest $App $bucket $url
 
-    Write-UserMessage -Message "Updating '$App' ($oldVersion -> $version)"
+    # Do not update if the new manifest does not support the installed architecture
+    if (!(supports_architecture $manifest $architecture)) {
+        throw [ScoopException] "Manifest no longer supports specific architecture '$architecture'" # TerminatingError thrown
+    }
+
+    Deny-ArmInstallation -Manifest $manifest -Architecture $architecture
+
+    Write-UserMessage -Message "Updating '$App' ($oldVersion -> $version) [$architecture]"
 
     #region Workaround of #2220
     # Remove and replace whole region after proper implementation

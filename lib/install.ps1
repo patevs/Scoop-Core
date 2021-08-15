@@ -11,6 +11,20 @@ function nightly_version($date, $quiet = $false) {
     return "nightly-$date_str"
 }
 
+function Deny-ArmInstallation {
+    param($Manifest, $Architecture)
+
+    process {
+        if (Test-IsArmArchitecture) {
+            if (($Architecture -eq 'arm64') -and !($Manifest.'architecture'.'arm64')) {
+                throw [ScoopException] "Manifest does not explicitly support 'arm64' architecture. Try to install with '--arch 32bit' or '--arch 64bit' to use Windows arm emulation."
+            }
+        } else {
+            if ($Architecture -eq 'arm64') { throw [ScoopException] "Installation of 'arm64' version is not supported on x86 based system" }
+        }
+    }
+}
+
 function install_app($app, $architecture, $global, $suggested, $use_cache = $true, $check_hash = $true) {
     $app, $bucket, $null = parse_app $app
     $app, $manifest, $bucket, $url = Find-Manifest $app $bucket
@@ -34,6 +48,8 @@ function install_app($app, $architecture, $global, $suggested, $use_cache = $tru
     if (!(supports_architecture $manifest $architecture)) {
         throw [ScoopException] "'$app' does not support $architecture architecture" # TerminatingError thrown
     }
+
+    Deny-ArmInstallation -Manifest $manifest -Architecture $architecture
 
     $buc = if ($bucket) { " [$bucket]" } else { '' }
     Write-UserMessage -Message "Installing '$app' ($version) [$architecture]$buc"
@@ -65,6 +81,11 @@ function install_app($app, $architecture, $global, $suggested, $use_cache = $tru
     $current_dir = current_dir $dir # Save some lines in manifests
     $original_dir = $dir # Keep reference to real (not linked) directory
     $persist_dir = persistdir $app $global
+
+    # Suggest installing arm64
+    if ((Test-IsArmArchitecture) -and ($architecture -ne 'arm64') -and ($manifest.'architecture'.'arm64')) {
+        Write-UserMessage -Message 'Manifest explicitly supports arm64. Consider to install using arm64 version to achieve best compatibility/performance.' -Success
+    }
 
     # Download and extraction
     Invoke-ManifestScript -Manifest $manifest -ScriptName 'pre_download' -Architecture $architecture

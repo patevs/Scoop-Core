@@ -3,8 +3,8 @@
 # Help: When provided application is installed, all information will be shown based on the locally installed manifest.
 #
 # Options:
-#   -h, --help                  Show help for this command.
-#   -a, --arch <32bit|64bit>    Use the specified architecture, if the application's manifest supports it.
+#   -h, --help                      Show help for this command.
+#   -a, --arch <32bit|64bit|arm64>  Use the specified architecture, if the application's manifest supports it.
 
 'buckets', 'core', 'depends', 'help', 'getopt', 'install', 'manifest', 'Versions' | ForEach-Object {
     . (Join-Path $PSScriptRoot "..\lib\$_.ps1")

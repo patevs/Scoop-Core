@@ -2,6 +2,8 @@
 
 ## [0.6.5](https://github.com/Ash258/Scoop-Core/milestone/5)
 
+- Initial support for manipulation with `arm64` based manifests
+- **Update**: Application will not be updated, if manifest does not support architecture used for installation.
 - **Checkver**: URL ping behaviour equality with `dl` function
 - Add `Base` bucket to known
 - **scoop-checkup**: Do not suggest 7zip installation when `7ZIPEXTRACT_USE_EXTERNAL` is configured

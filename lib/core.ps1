@@ -125,6 +125,24 @@ function Invoke-SystemComSpecCommand {
     }
 }
 
+function Test-IsArmArchitecture {
+    <#
+    .SYNOPSIS
+        Custom check to identify arm based devices.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param()
+
+    process {
+        if (Test-IsUnix) {
+            return (Invoke-SystemComSpecCommand -Unix 'uname -m') -like 'aarch*'
+        } else {
+            return $env:PROCESSOR_IDENTIFIER -like 'ARMv*'
+        }
+    }
+}
+
 function load_cfg($file) {
     if (!(Test-Path $file)) { return $null }
 
@@ -634,6 +652,7 @@ function dl($url, $to) {
     $wc.DownloadFile($url, $to)
 }
 
+# TODO: Unix
 function env($name, $global, $val = '__get') {
     $target = if ($global) { 'Machine' } else { 'User' }
     if ($val -eq '__get') {
@@ -757,8 +776,12 @@ function shim($path, $global, $name, $arg) {
 
     if ($path -match '\.(exe|com)$') {
         # for programs with no awareness of any shell
+        $executableName = if (Test-IsArmArchitecture) { 'shim.arm64.exe' } else { 'shim.exe' }
         # TODO: Use relative path from this file
-        versiondir 'scoop' 'current' | Join-Path -ChildPath 'supporting\shimexe\bin\shim.exe' | Copy-Item -Destination "$shim.exe" -Force
+        $shimExePath = versiondir 'scoop' 'current' | Join-Path -ChildPath "supporting\shimexe\bin\$executableName"
+
+        Copy-Item -LiteralPath $shimExePath -Destination "$shim.exe" -Force
+
         $result = @("path = $resolved_path")
         if ($arg) { $result += "args = $arg" }
 
@@ -796,6 +819,7 @@ function search_in_path($target) {
     }
 }
 
+# TODO: Unix
 function ensure_in_path($dir, $global) {
     $path = env 'PATH' $global
     if ($path -notmatch [System.Text.RegularExpressions.Regex]::Escape($dir)) {

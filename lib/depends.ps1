@@ -2,7 +2,6 @@
     . (Join-Path $PSScriptRoot "$_.ps1")
 }
 
-
 # Resolve dependencies for the supplied apps, and sort into the correct order
 function install_order($apps, $arch) {
     $res = @()

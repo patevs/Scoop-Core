@@ -81,4 +81,18 @@ Describe 'Manifest Dependencies' -Tag 'Scoop' {
         $deps = Get-ManifestDependencies -Manifest $manifest -Architecture '32bit'
         $deps | Should -Be @()
     }
+
+    It 'Depends property' {
+        $manifest = ConvertFrom-Manifest -LiteralPath "$working_dir\bucket\url_deps.json"
+        $manifest | Add-Member -MemberType 'NoteProperty' -Name 'depends' -Value @(
+            'cosi',
+            'mysql'
+        )
+        $deps = Get-ManifestDependencies -Manifest $manifest -Architecture '32bit'
+        $deps | Should -Be @('cosi', 'mysql')
+
+        $manifest.depends = @()
+        $deps = Get-ManifestDependencies -Manifest $manifest -Architecture '32bit'
+        $deps | Should -Be @()
+    }
 }

@@ -79,3 +79,19 @@ foreach ($t in $toInstall) {
     $dependenciesToResolve += Get-ManifestDependencies -Manifest $t.ManifestObject -Architecture $Architecture
 }
 
+
+show_suggestions $suggested
+
+if ($failedApplications) {
+    $pl = pluralize $failedApplications.Count 'This application' 'These applications'
+    Write-UserMessage -Message "$pl failed to install: $($failedApplications -join ', ')" -Err
+}
+
+if ($failedDependencies) {
+    $pl = pluralize $failedDependencies.Count 'This dependency' 'These dependencies'
+    Write-UserMessage -Message "$pl failed to install: $($failedDependencies -join ', ')" -Err
+}
+
+if ($Problems -gt 0) { $ExitCode = 10 + $Problems }
+
+exit $exitCode

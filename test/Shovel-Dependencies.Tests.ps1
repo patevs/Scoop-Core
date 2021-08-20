@@ -19,6 +19,7 @@ Describe 'Manifest Dependencies' -Tag 'Scoop' {
         $deps = Get-ManifestDependency -Manifest $manifest -Architecture '32bit'
         $deps | Should -Be @('7zip', 'zstd')
 
+        Mock get_config { return $true } -ParameterFilter { $name -eq 'MSIEXTRACT_USE_LESSMSI' }
         $manifest.architecture.'32bit'.url = 'https://cosi.com/alfa.msi'
         $deps = Get-ManifestDependency -Manifest $manifest -Architecture '32bit'
         $deps | Should -Be @('lessmsi')

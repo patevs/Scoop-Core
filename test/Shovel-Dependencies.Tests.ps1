@@ -12,23 +12,23 @@ Describe 'Manifest Dependencies' -Tag 'Scoop' {
 
     It 'Get URL dependencies' {
         $manifest = ConvertFrom-Manifest -LiteralPath "$working_dir\bucket\url_deps.json"
-        $deps = Get-ManifestDependencies -Manifest $manifest -Architecture '64bit'
+        $deps = Get-ManifestDependency -Manifest $manifest -Architecture '64bit'
         $deps | Should -Be @('7zip')
 
         $manifest.architecture.'32bit'.url = 'https://cosi.com/alfa.tar.zst'
-        $deps = Get-ManifestDependencies -Manifest $manifest -Architecture '32bit'
+        $deps = Get-ManifestDependency -Manifest $manifest -Architecture '32bit'
         $deps | Should -Be @('7zip', 'zstd')
 
         $manifest.architecture.'32bit'.url = 'https://cosi.com/alfa.msi'
-        $deps = Get-ManifestDependencies -Manifest $manifest -Architecture '32bit'
+        $deps = Get-ManifestDependency -Manifest $manifest -Architecture '32bit'
         $deps | Should -Be @('lessmsi')
 
         $manifest | Add-Member -MemberType 'NoteProperty' -name 'innosetup' -Value $true
-        $deps = Get-ManifestDependencies -Manifest $manifest -Architecture '32bit'
+        $deps = Get-ManifestDependency -Manifest $manifest -Architecture '32bit'
         $deps | Should -Be @('lessmsi', 'innounp')
 
         Mock get_config { return $true } -ParameterFilter { $name -eq 'INNOSETUP_USE_INNOEXTRACT' }
-        $deps = Get-ManifestDependencies -Manifest $manifest -Architecture '64bit'
+        $deps = Get-ManifestDependency -Manifest $manifest -Architecture '64bit'
         $deps | Should -Be @('7zip', 'innoextract')
     }
 
@@ -38,20 +38,20 @@ Describe 'Manifest Dependencies' -Tag 'Scoop' {
             'Expand-7zipArchive -Path ''cosi'' -Removal'
         )
 
-        $deps = Get-ManifestDependencies -Manifest $manifest -Architecture '32bit'
+        $deps = Get-ManifestDependency -Manifest $manifest -Architecture '32bit'
         $deps | Should -Be @('7zip')
 
         $manifest.pre_install = 'Expand-ZstdArchive -Removal -Path '''''
-        $deps = Get-ManifestDependencies -Manifest $manifest -Architecture '32bit'
+        $deps = Get-ManifestDependency -Manifest $manifest -Architecture '32bit'
         $deps | Should -Be @('7zip', 'zstd')
 
         $manifest.pre_install = 'Expand-DarkArchive -Removal -Path '''''
-        $deps = Get-ManifestDependencies -Manifest $manifest -Architecture '32bit'
+        $deps = Get-ManifestDependency -Manifest $manifest -Architecture '32bit'
         $deps | Should -Be @('dark')
 
         $manifest.pre_install = $null
         $manifest | Add-Member -MemberType 'NoteProperty' -Name 'post_install' -Value 'Expand-MsiArchive -Removal -Path '''''
-        $deps = Get-ManifestDependencies -Manifest $manifest -Architecture '32bit'
+        $deps = Get-ManifestDependency -Manifest $manifest -Architecture '32bit'
         $deps | Should -Be @('lessmsi')
 
         # innosetup -UseInnoextract
@@ -60,17 +60,17 @@ Describe 'Manifest Dependencies' -Tag 'Scoop' {
         $manifest | Add-Member -MemberType 'NoteProperty' -Name 'installer' -Value @{
             'script' = @('Expand-InnoArchive -Path cosi -UseInnoextract')
         }
-        $deps = Get-ManifestDependencies -Manifest $manifest -Architecture '32bit'
+        $deps = Get-ManifestDependency -Manifest $manifest -Architecture '32bit'
         $deps | Should -Be @('innoextract')
 
         # innosetup > innounp|innoextract
         $manifest.installer = $null
         $manifest | Add-Member -MemberType 'NoteProperty' -Name 'innosetup' -Value $true
         Mock get_config { return $true } -ParameterFilter { $name -eq 'INNOSETUP_USE_INNOEXTRACT' }
-        $deps = Get-ManifestDependencies -Manifest $manifest -Architecture '32bit'
+        $deps = Get-ManifestDependency -Manifest $manifest -Architecture '32bit'
         $deps | Should -Be @('innoextract')
         Mock get_config { return $false } -ParameterFilter { $name -eq 'INNOSETUP_USE_INNOEXTRACT' }
-        $deps = Get-ManifestDependencies -Manifest $manifest -Architecture '32bit'
+        $deps = Get-ManifestDependency -Manifest $manifest -Architecture '32bit'
         $deps | Should -Be @('innounp')
 
         # No dependencies
@@ -78,7 +78,7 @@ Describe 'Manifest Dependencies' -Tag 'Scoop' {
         $manifest.pre_install = 'Expand-ZstdArchive-Removal -Path '''''
         $manifest.installer = $null
         $manifest.post_install = $null
-        $deps = Get-ManifestDependencies -Manifest $manifest -Architecture '32bit'
+        $deps = Get-ManifestDependency -Manifest $manifest -Architecture '32bit'
         $deps | Should -Be @()
     }
 
@@ -88,11 +88,11 @@ Describe 'Manifest Dependencies' -Tag 'Scoop' {
             'cosi',
             'mysql'
         )
-        $deps = Get-ManifestDependencies -Manifest $manifest -Architecture '32bit'
+        $deps = Get-ManifestDependency -Manifest $manifest -Architecture '32bit'
         $deps | Should -Be @('cosi', 'mysql')
 
         $manifest.depends = @()
-        $deps = Get-ManifestDependencies -Manifest $manifest -Architecture '32bit'
+        $deps = Get-ManifestDependency -Manifest $manifest -Architecture '32bit'
         $deps | Should -Be @()
     }
 }

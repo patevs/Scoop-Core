@@ -3,7 +3,7 @@
 }
 
 # Return array of plain text values to be resolved
-function Get-ManifestDependencies {
+function Get-ManifestDependency {
     param($Manifest, $Architecture)
 
     process {
@@ -18,15 +18,15 @@ function Get-ManifestDependencies {
         $post_install = arch_specific 'post_install' $Manifest $Architecture
 
         # Indirect dependencies
-        $result += Get-UrlDependencies -Manifest $Manifest -Architecture $Architecture
-        $result += Get-ScriptDependencies -ScriptProperty ($pre_install + $installer.script + $post_install)
+        $result += Get-UrlDependency -Manifest $Manifest -Architecture $Architecture
+        $result += Get-ScriptDependency -ScriptProperty ($pre_install + $installer.script + $post_install)
 
         return $result | Select-Object -Unique
     }
 }
 
 # TODO: More pretty implementation
-function Get-ScriptDependencies {
+function Get-ScriptDependency {
     param($ScriptProperty)
 
     process {
@@ -72,7 +72,7 @@ function Get-ScriptDependencies {
     }
 }
 
-function Get-UrlDependencies {
+function Get-UrlDependency {
     param($Manifest, $Architecture)
 
     process {

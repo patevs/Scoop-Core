@@ -410,6 +410,7 @@ function Resolve-ManifestInformation {
             'Bucket'           = $bucket
             'ManifestObject'   = $manifest
             'Url'              = $url
+            'OriginalQuery'    = $ApplicationQuery
             'LocalPath'        = $localPath
             'CalculatedUrl'    = $calcURL
             'CalculatedBucket' = $calcBucket

@@ -73,10 +73,8 @@ foreach ($toResolve in $ProvidedApplications) {
 
 if ($toInstall.Count -eq 0) { Stop-ScoopExecution -Message 'Nothing to install' }
 
-# Get all dependencies to be resolved
-$dependenciesToResolve = @()
-foreach ($t in $toInstall) {
-    $dependenciesToResolve += Get-ManifestDependency -Manifest $t.ManifestObject -Architecture $Architecture
+$ApplicationsToInstall = Resolve-InstallationQueueDependency -ResolvedManifestInformatin $toInstall -Architecture $Architecture
+
 }
 
 

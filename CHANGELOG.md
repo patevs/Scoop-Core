@@ -6,12 +6,22 @@
     - New temporary command for testing of install command rewrite
         - When tested accordingly it will become usual `scoop-install`
     - Support installation of YAML manifests
-    - Support installation of archived versions
-        - `manifest@version`
-    - Properly support syntax `Bucket/Manifest@version`
     - Options `-f`, `--force` implemented
         - If provided the current status of installed application will be ignored and application installed always
         - It was there all the time, but it did not do anything
+    - Support installation of archived versions
+        - `manifest@version`
+    - Properly support syntax `Bucket/Manifest@version`
+    - Allows `depends` property to be any of valid lookup strings
+        ```json
+        "depends": [
+            "simplemanifestlookup",
+            "https://some/url/manifest.yml",
+            "bucket/manifest",
+            "bucket/manifest@specificVersion",
+            "C:/Even/Local/Path/Should/Be/Used/With/Caution"
+        ]
+        ```
 - Initial support for manipulation with `arm64` based manifests
 - **Update**: Application will not be updated, if manifest does not support architecture used for installation.
 - **Checkver**: URL ping behaviour equality with `dl` function

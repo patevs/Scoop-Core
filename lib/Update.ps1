@@ -198,13 +198,21 @@ function Update-Scoop {
     # Add main bucket if not already added
     if ((Get-LocalBucket) -notcontains 'main') {
         Write-UserMessage -Message 'The main bucket has been separated', 'Adding main bucket...' -Output
-        Add-Bucket -Name 'main'
+        try {
+            Add-Bucket -Name 'main'
+        } catch {
+            Write-UserMessage -Message "'main' bucket cannot be added: $($_.Exception.Message)" -Err
+        }
     }
 
     # Add Base bucket if not already added
     if ((Get-LocalBucket) -notcontains 'Base') {
         Write-UserMessage -Message 'New Base bucket was introduces, which will replace main', 'Adding Base bucket...' -Output
-        Add-Bucket -Name 'Base'
+        try {
+            Add-Bucket -Name 'Base'
+        } catch {
+            Write-UserMessage -Message "'Base' bucket cannot be added: $($_.Exception.Message)" -Err
+        }
     }
 
     ensure_scoop_in_path

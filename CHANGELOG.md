@@ -22,10 +22,12 @@
             "C:/Even/Local/Path/Should/Be/Used/With/Caution"
         ]
         ```
+- **scoop-install**: Fix independent installations
 - Initial support for manipulation with `arm64` based manifests
-- **Update**: Application will not be updated, if manifest does not support architecture used for installation.
+- **Update**: Application will not be updated, if manifest does not support architecture used for installation
 - **Checkver**: URL ping behaviour equality with `dl` function
 - Add `Base` bucket to known
+    - It will be automatically added when `update` command is executed
 - **scoop-checkup**: Do not suggest 7zip installation when `7ZIPEXTRACT_USE_EXTERNAL` is configured
 - **scoop-search**:
     - Do not fail when parsing invalid local manifest

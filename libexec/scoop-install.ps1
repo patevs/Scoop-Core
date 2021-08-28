@@ -58,7 +58,7 @@ function is_installed($app, $global, $version) {
     return $false
 }
 
-$opt, $apps, $err = Resolve-GetOpt $args 'gfiksa:' 'global', 'force', 'independent', 'no-cache', 'skip', 'arch='
+$opt, $apps, $err = Resolve-GetOpt $args 'giksa:' 'global', 'independent', 'no-cache', 'skip', 'arch='
 if ($err) { Stop-ScoopExecution -Message "scoop install: $err" -ExitCode 2 }
 
 $exitCode = 0
@@ -111,7 +111,7 @@ $apps = @(($specific_versions_paths + $difference) | Where-Object { $_ } | Sort-
 # differentiate after dependencies are added
 $explicit_apps = $apps
 
-if (!$independent) {
+if ($false -eq $independent) {
     try {
         $apps = install_order $apps $architecture # Add dependencies
     } catch {
@@ -140,14 +140,17 @@ $failedApplications = @()
 
 foreach ($app in $apps) {
     $bucket = $cleanApp = $null
-    $applicationSpecificDependencies = @(deps $app $architecture)
-    $cmp = Compare-Object $applicationSpecificDependencies $failedDependencies -ExcludeDifferent
-    # Skip Installation because required depency failed
-    if ($cmp -and ($cmp.InputObject.Count -gt 0)) {
-        $f = $cmp.InputObject -join ', '
-        Write-UserMessage -Message "'$app' cannot be installed due to failed dependency installation ($f)" -Err
-        ++$problems
-        continue
+
+    if ($false -eq $independent) {
+        $applicationSpecificDependencies = @(deps $app $architecture)
+        $cmp = Compare-Object $applicationSpecificDependencies $failedDependencies -ExcludeDifferent
+        # Skip Installation because required depency failed
+        if ($cmp -and ($cmp.InputObject.Count -gt 0)) {
+            $f = $cmp.InputObject -join ', '
+            Write-UserMessage -Message "'$app' cannot be installed due to failed dependency installation ($f)" -Err
+            ++$problems
+            continue
+        }
     }
 
     # TODO: Resolve-ManifestInformation

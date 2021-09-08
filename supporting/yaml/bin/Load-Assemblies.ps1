@@ -23,15 +23,14 @@ function Load-Assembly {
         "net35" = Join-Path $libDir "net35\YamlDotNet.dll";
     }
 
-    if ($PSVersionTable.PSEdition -eq "Core") {
-        return [Reflection.Assembly]::LoadFrom($assemblies["core"])
+    if ($PSVersionTable.PSEdition -eq 'Core') {
+        return [Reflection.Assembly]::Load([IO.File]::ReadAllBytes($assemblies['core']))
     } elseif ($PSVersionTable.PSVersion.Major -ge 4) {
-        return [Reflection.Assembly]::LoadFrom($assemblies["net45"])
+        return [Reflection.Assembly]::Load([IO.File]::ReadAllBytes($assemblies['net45']))
     } else {
-        return [Reflection.Assembly]::LoadFrom($assemblies["net35"])
+        return [Reflection.Assembly]::Load([IO.File]::ReadAllBytes($assemblies['net35']))
     }
 }
-
 
 function Initialize-Assemblies {
     $requiredTypes = @(
@@ -42,7 +41,7 @@ function Initialize-Assemblies {
         "StaticTypeResolver"
     )
 
-    $yaml = [System.AppDomain]::CurrentDomain.GetAssemblies() | ? Location -Match "YamlDotNet.dll"
+    $yaml = [System.AppDomain]::CurrentDomain.GetAssemblies() | Where-Object Fullname -Match "YamlDotNet"
     if (!$yaml) {
         return Load-Assembly
     }

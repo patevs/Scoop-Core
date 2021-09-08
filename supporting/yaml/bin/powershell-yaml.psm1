@@ -307,7 +307,22 @@ public class StringQuotingEmitter: ChainedEventEmitter {
 }
 "@
 
-$referenceList = @([YamlDotNet.Serialization.Serializer].Assembly.Location,[Text.RegularExpressions.Regex].Assembly.Location)
+function Get-YamlDotNetAsmLoc {
+    $YamlDotNetAsmLoc = [YamlDotNet.Serialization.Serializer].Assembly.Location
+    if ($YamlDotNetAsmLoc -eq '') {
+        $libDir = Join-Path $here 'lib'
+        if ($PSVersionTable.PSEdition -eq 'Core') {
+            $YamlDotNetAsmLoc = Join-Path $libDir 'netstandard1.3\YamlDotNet.dll';
+        } elseif ($PSVersionTable.PSVersion.Major -ge 4) {
+            $YamlDotNetAsmLoc = Join-Path $libDir 'net45\YamlDotNet.dll';
+        } else {
+            $YamlDotNetAsmLoc = Join-Path $libDir 'net35\YamlDotNet.dll';
+        }
+    }
+    return $YamlDotNetAsmLoc
+}
+
+$referenceList = @((Get-YamlDotNetAsmLoc),[Text.RegularExpressions.Regex].Assembly.Location)
 if ($PSVersionTable.PSEdition -eq "Core") {
     Add-Type -TypeDefinition $stringQuotingEmitterSource -ReferencedAssemblies $referenceList -Language CSharp -CompilerOptions "-nowarn:1701"
 } else {

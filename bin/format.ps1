@@ -105,7 +105,7 @@ $checkverFormatBlock = {
         }
 
         # Only one github property and homepage is set to github repository
-        if (($checkver.PSObject.Properties.Name.Count -eq 1) -and $checkver.github -and ($checkver.github -eq $Manifest.homepage)) {
+        if (($checkver.PSObject.Properties.Name.Count -eq 1) -and $checkver.github -and ($checkver.github -eq $Manifest.homepage) -and ($Manifest.homepage -like 'https://github.com/*')) {
             _infoMes $name 'alone checkver.github -> checkver github string'
 
             $checkver = 'github'

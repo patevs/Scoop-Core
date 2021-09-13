@@ -510,13 +510,16 @@ function installed_manifest($app, $version, $global, [Switch] $PathOnly) {
     $d = versiondir $app $version $global
 
     #region Migration from non-generic file name
-    $old = 'manifest.json'
     $new = 'scoop-manifest.json'
-    if (Join-Path $d $old | Test-Path) {
-        Write-UserMessage -Message "Migrating $old to $new" -Info
-        Join-Path $d $old | Rename-Item -NewName $new
-    }
+    $old = 'manifest.json'
     $manifestPath = Join-Path $d $new
+    $oldManifestPath = Join-Path $d $old
+
+    if (!(Test-Path -LiteralPath $manifestPath -PathType 'Leaf') -and (Test-Path -LiteralPath $oldManifestPath -PathType 'Leaf')) {
+        Write-UserMessage -Message "[$app] Migrating $old to $new" -Info
+        debug $oldManifestPath
+        Rename-Item -LiteralPath $oldManifestPath -NewName $new
+    }
     #endregion Migration from non-generic file name
 
     # Different extension types
@@ -544,11 +547,13 @@ function save_install_info($info, $dir) {
 function install_info($app, $version, $global) {
     $d = versiondir $app $version $global
     $path = Join-Path $d 'scoop-install.json'
+    $oldPath = Join-Path $d 'install.json'
 
-    if (!(Test-Path $path)) {
-        if (Join-Path $d 'install.json' | Test-Path) {
-            Write-UserMessage -Message 'Migrating install.json to scoop-install.json' -Info
-            Join-Path $d 'install.json' | Rename-Item -NewName 'scoop-install.json'
+    if (!(Test-Path -LiteralPath $path -PathType 'Leaf')) {
+        if (Test-Path -LiteralPath $oldPath -PathType 'Leaf') {
+            Write-UserMessage -Message "[$app] Migrating install.json to scoop-install.json" -Info
+            debug $oldPath
+            Rename-Item -LiteralPath $oldPath -NewName 'scoop-install.json'
         } else {
             return $null
         }

@@ -60,12 +60,17 @@ function find_hash_in_textfile([String] $url, [Hashtable] $substitutions, [Strin
     if ($hash.Length -eq 0) {
         $filenameRegex = "([a-fA-F\d]{32,128})[\x20\t]+.*`$basename(?:[\x20\t]+\d+)?"
         $filenameRegex = Invoke-VariableSubstitution -Entity $filenameRegex -Substitutes $substitutions -EscapeRegularExpression:$true
+        debug $filenameRegex
         if ($hashfile -match $filenameRegex) {
             $hash = $Matches[1]
         }
-        $metalinkRegex = '<hash[^>]+>([a-fA-F\d]{64})'
-        if ($hashfile -match $metalinkRegex) {
-            $hash = $Matches[1]
+
+        if ($hash.Length -eq 0) {
+            $metalinkRegex = '<hash[^>]+>([a-fA-F\d]{64})'
+            debug $metalinkRegex
+            if ($hashfile -match $metalinkRegex) {
+                $hash = $Matches[1]
+            }
         }
     }
 

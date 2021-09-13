@@ -32,7 +32,7 @@ if ($Applications -eq '*') {
     $Applications = @()
     foreach ($gl in $true, $false) {
         installed_apps $gl | ForEach-Object {
-            $Applications += , @($_, $true)
+            $Applications += , @($_, $gl)
         }
     }
 }
@@ -41,6 +41,7 @@ foreach ($a in $Applications) {
     ($app, $gl) = $a
 
     # TODO: Adopt Resolve-ManifestInformation ???
+    # Only name and version is relevant, manual parse should be enough
     $app, $bucket, $version = parse_app $app
 
     # Skip scoop
@@ -59,7 +60,7 @@ foreach ($a in $Applications) {
 
     $manifest = installed_manifest $app $version $gl
 
-    # When there is no manifest it is clear that aplication is not installed with this specific version
+    # When there is no manifest it is clear that application is not installed with this specific version
     if ($null -eq $manifest) {
         ++$Problems
         Write-UserMessage -Message "'$app ($version)' is not installed" -Err
@@ -74,7 +75,7 @@ foreach ($a in $Applications) {
 
     Write-UserMessage -Message "Resetting $app ($version)"
 
-    $dir = Resolve-Path (versiondir $app $version $gl)
+    $dir = versiondir $app $version $gl | Resolve-Path
     $original_dir = $dir
     $persist_dir = persistdir $app $gl
 

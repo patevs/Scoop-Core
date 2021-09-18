@@ -2,6 +2,7 @@
 
 ## [0.6.5](https://github.com/Ash258/Scoop-Core/milestone/5)
 
+- Internal modules/libs are loaded only when not loaded already
 - **scoop-install**: Fix independent installations
 - Initial support for manipulation with `arm64` based manifests
 - **Update**: Application will not be updated, if manifest does not support architecture used for installation

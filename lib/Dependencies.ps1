@@ -116,7 +116,7 @@ function Resolve-InstallationQueueDependency {
             $dependencies = @()
 
             try {
-                $dependencies = Resolve-AllManifestDependency -Manifest $single.ManifestObject -Architecture $Architecture
+                $dependencies = Resolve-AllManifestDependency -ManifestInformation $single -Architecture $Architecture
             } catch {
                 Write-UserMessage -Message "Cannot resolve dependency for '$($single.ApplicationName)' ($($_.Exception.Message))" -Err
                 continue
@@ -148,56 +148,45 @@ function Resolve-InstallationQueueDependency {
     }
 }
 
+# http://www.electricmonk.nl/docs/dependency_resolving_algorithm/dependency_resolving_algorithm.html
 function Resolve-AllManifestDependency {
-    param($Manifest, $Architecture)
+    param($ManifestInformation, $Architecture)
 
     process {
         $resolved = New-Object System.Collections.ArrayList
 
-        # TODO:
+        dep_resolve2 $ManifestInformation $Architecture $resolved @()
+
+        if ($resolved.Count -eq 1) { $resolved = New-Object System.Collections.ArrayList } # No dependencies
 
         return $resolved
     }
 }
 
-# http://www.electricmonk.nl/docs/dependency_resolving_algorithm/dependency_resolving_algorithm.html
-function deps($app, $arch) {
-    $resolved = New-Object System.Collections.ArrayList
-    dep_resolve $app $arch $resolved @()
-
-    if ($resolved.Count -eq 1) { return @() } # No dependencies
-
-    return $resolved[0..($resolved.Count - 2)]
-}
-
-function dep_resolve($app, $arch, $resolved, $unresolved) {
+function dep_resolve2($ManifestInformation, $Architecture, $Resolved, $Unresolved) {
     #[out]$resolved
     #[out]$unresolved
 
-    # TODO: Adopt Resolve-ManifestInformation
-    $app, $bucket, $null = parse_app $app
-    $unresolved += $app
-    $null, $manifest, $null, $null = Find-Manifest $app $bucket
+    $Unresolved += $ManifestInformation
 
-
-    if (!$manifest) {
-        if ($bucket -and ((Get-LocalBucket) -notcontains $bucket)) {
-            Write-UserMessage -Message "Bucket '$bucket' not installed. Add it with 'scoop bucket add $bucket' or 'scoop bucket add $bucket <repo>'." -Warning
+    if (!$ManifestInformation.ManifestObject) {
+        if ($ManifestInformation.Bucket -and ((Get-LocalBucket) -notcontains $ManifestInformation.Bucket)) {
+            Write-UserMessage -Message "Bucket '$($ManifestInformation.Bucket)' not installed. Add it with 'scoop bucket add $($ManifestInformation.Bucket)' or 'scoop bucket add $($ManifestInformation.Bucket) <repo>'." -Warning
         }
 
-        throw [ScoopException] "Could not find manifest for '$app'$(if(!$bucket) { '.' } else { " from '$bucket' bucket." })" # TerminatingError thrown
+        throw [ScoopException] "Could not find manifest for '$($ManifestInformation.OriginalQuery)'" # TerminatingError thrown
     }
 
-    $deps = @(install_deps $manifest $arch) + @(runtime_deps $manifest) | Select-Object -Unique
+    $deps = Get-ManifestDependency $ManifestInformation.ManifestObject $Architecture
 
     foreach ($dep in $deps) {
         if ($resolved -notcontains $dep) {
             if ($unresolved -contains $dep) {
                 throw [ScoopException] "Circular dependency detected: '$app' -> '$dep'." # TerminatingError thrown
             }
-            dep_resolve $dep $arch $resolved $unresolved
+            dep_resolve2 $dep $Architecture $Resolved $Unresolved
         }
     }
-    $resolved.Add($app) | Out-Null
-    $unresolved = $unresolved -ne $app # Remove from unresolved
+    $Resolved.Add($ManifestInformation) | Out-Null
+    $Unresolved = $Unresolved -ne $app # Remove from unresolved
 }

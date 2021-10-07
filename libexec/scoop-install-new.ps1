@@ -75,7 +75,35 @@ if ($toInstall.Count -eq 0) { Stop-ScoopExecution -Message 'Nothing to install' 
 
 $ApplicationsToInstall = Resolve-InstallationQueueDependency -ResolvedManifestInformatin $toInstall -Architecture $Architecture
 
+Write-Host $ApplicationsToInstall -f red
+
+exit 0
+
+
+
+
+
+
+
+# Iterate in all resolved manifests and resolve dependencies
+foreach ($dep in $toInstall) {
 }
+
+if (!$Independent) {
+    try {
+        $apps = install_order $toInstall $Architecture # Add dependencies
+    } catch {
+        New-IssuePromptFromException -ExceptionMessage $_.Exception.Message
+    }
+}
+
+
+
+
+
+
+
+
 
 
 show_suggestions $suggested
@@ -93,3 +121,134 @@ if ($failedDependencies) {
 if ($Problems -gt 0) { $ExitCode = 10 + $Problems }
 
 exit $exitCode
+
+
+
+
+
+
+
+# Iterate in all provided values
+# Recursively resolve dependencies
+
+
+# Install everything
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+foreach ($app in $toInstall) {
+    # Install
+    try {
+        install_app $app $architecture $global $suggested $use_cache $check_hash
+    } catch {
+        ++$Problems
+
+        # Register failed dependencies
+        if ($explicit_apps -notcontains $app) { $failedDependencies += $app } else { $failedApplications += $app }
+
+        debug $_.InvocationInfo
+        New-IssuePromptFromException -ExceptionMessage $_.Exception.Message -Application $cleanApp -Bucket $bucket
+
+        continue
+    }
+}
+
+#===============================================================
+# TODO: Export
+# TODO: Cleanup
+function is_installed($app, $global, $version) {
+    if ($app.EndsWith('.json')) {
+        $app = [System.IO.Path]::GetFileNameWithoutExtension($app)
+    }
+
+    if (installed $app $global) {
+        function gf($g) { if ($g) { ' --global' } }
+
+        # Explicitly provided version indicate local workspace manifest with older version of already installed application
+        if ($version) {
+            $all = @(Get-InstalledVersion -AppName $app -Global:$global)
+            return $all -contains $version
+        }
+
+        $version = Select-CurrentVersion -AppName $app -Global:$global
+        if (!(install_info $app $version $global)) {
+            Write-UserMessage -Err -Message @(
+                "It looks like a previous installation of '$app' failed."
+                "Run 'scoop uninstall $app$(gf $global)' before retrying the install."
+            )
+            return $true
+        }
+        Write-UserMessage -Warning -Message @(
+            "'$app' ($version) is already installed.",
+            "Use 'scoop update $app$(gf $global)' to install a new version."
+        )
+
+        return $true
+    }
+
+    return $false
+}
+
+
+# Get any specific versions that need to be handled first
+$specific_versions = $apps | Where-Object {
+    $null, $null, $version = parse_app $_
+    return $null -ne $version
+}
+
+# Compare object does not like nulls
+if ($specific_versions.Length -gt 0) {
+    $difference = Compare-Object -ReferenceObject $apps -DifferenceObject $specific_versions -PassThru
+} else {
+    $difference = $apps
+}
+
+$specific_versions_paths = @()
+foreach ($sp in $specific_versions) {
+    $app, $bucket, $version = parse_app $sp
+    if (installed_manifest $app $version) {
+        Write-UserMessage -Warn -Message @(
+            "'$app' ($version) is already installed.",
+            "Use 'scoop update $app$global_flag' to install a new version."
+        )
+        continue
+    } else {
+        try {
+            $specific_versions_paths += generate_user_manifest $app $bucket $version
+        } catch {
+            Write-UserMessage -Message $_.Exception.Message -Color DarkRed
+            ++$problems
+        }
+    }
+}
+$apps = @(($specific_versions_paths + $difference) | Where-Object { $_ } | Sort-Object -Unique)
+
+# Remember which were explictly requested so that we can
+# differentiate after dependencies are added
+$explicit_apps = $apps
+
+# This should not be breaking error in case there are other apps specified
+if ($apps.Count -eq 0) { Stop-ScoopExecution -Message 'Nothing to install' }
+
+$apps = ensure_none_failed $apps $global
+
+if ($apps.Count -eq 0) { Stop-ScoopExecution -Message 'Nothing to install' }
+
+$apps, $skip = prune_installed $apps $global
+
+$skip | Where-Object { $explicit_apps -contains $_ } | ForEach-Object {
+    $app, $null, $null = parse_app $_
+    $version = Select-CurrentVersion -AppName $app -Global:$global
+    Write-UserMessage -Message "'$app' ($version) is already installed. Skipping." -Warning
+}

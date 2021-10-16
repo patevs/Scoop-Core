@@ -15,6 +15,7 @@
     - Support `githubToken` config and `GITHUB_TOKEN` environment variable for Github API calls
 - **scoop-install**, **scoop-update**: Report failed installations/updates at the end of execution
 - **Schema**:
+    - Fix validation for curly bracket variables in autoupdate
     - Initial support for `arm64` architecture
     - Allow `$schema` property
 - **CI**:

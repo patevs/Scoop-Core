@@ -44,6 +44,21 @@ Describe -Tag 'Manifests' 'manifest-validation' {
             $validator.Errors | Select-Object -First 1 | Should -Match "Property 'randomproperty' has not been defined and the schema does not allow additional properties\."
             $validator.Errors | Select-Object -Last 1 | Should -Match 'Required properties are missing from object: version, description\.'
         }
+        It 'fail with nonsense in autoupdate' {
+            $validator = New-Object Scoop.Validator($schema, $true)
+            $validator.Validate("$working_dir/autoupdate_fail.json") | Should -BeFalse
+            $validator.Errors.Count | Should -Not -Be 0
+            # URL should contain URI or uri with {}, but not $(base)?url
+            @($validator.Errors)[0] | Should -Match 'from ''anyOf'''
+            @($validator.Errors)[1] | Should -Match '\$baseurl/'
+            # Hash has to contain $url/$baseurl or uri
+            @($validator.Errors)[-1] | Should -Match 'nonhttps/'
+        }
+        It 'pass with curly brackets in autoupdate' {
+            $validator = New-Object Scoop.Validator($schema, $true)
+            $validator.Validate("$working_dir/autoupdate.json") | Should -BeTrue
+            $validator.Errors.Count | Should -Be 0
+        }
     }
 
     Context 'manifest validates against the schema' {
@@ -69,7 +84,7 @@ Describe -Tag 'Manifests' 'manifest-validation' {
 
             # Filter out valid manifests
             foreach ($ext in $ALLOWED_MANIFEST_EXTENSION) {
-                $manifest_files += $allFiles | Where-Object { $_ -like "*.$ext" }
+                $manifest_files += $allFiles | Where-Object -Property 'Name' -Like -Value "*.$ext"
             }
 
             $validator = New-Object Scoop.Validator($schema, $true)

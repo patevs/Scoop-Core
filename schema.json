@@ -99,20 +99,7 @@
                 },
                 "url": {
                     "description": "Specifies the URL of webpage/file which contains information about file integrity.",
-                    "anyOf": [
-                        {
-                            "type": "string",
-                            "format": "uri"
-                        },
-                        {
-                            "type": "string",
-                            "pattern": "^(\\$url|\\$baseurl).[\\w\\d]+$"
-                        },
-                        {
-                            "type": "string",
-                            "pattern": "^.*(\\$url|\\$baseurl).*$"
-                        }
-                    ]
+                    "$ref": "#/definitions/autoupdateHashUrl"
                 }
             }
         },
@@ -376,14 +363,39 @@
                 }
             ]
         },
+        "autoupdateUrl": {
+            "description": "Specifies URL to be updated.",
+            "anyOf": [
+                {
+                    "type": "string",
+                    "format": "uri"
+                },
+                {
+                    "type": "string",
+                    "pattern": "^https?://[\\w/?=&%._${}#-]+"
+                }
+            ]
+        },
+        "autoupdateHashUrl": {
+            "description": "Specifies URL to be updated.",
+            "anyOf": [
+                {
+                    "type": "string",
+                    "$ref": "#/definitions/autoupdateUrl"
+                },
+                {
+                    "type": "string",
+                    "pattern": "^(\\$\\{?(base)?url\\}?).*$"
+                }
+            ]
+        },
         "autoupdateArchitecture": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
                 "url": {
-                    "description": "Specifies URLs to be updated.",
-                    "type": "string",
-                    "format": "uri"
+                    "description": "Specifies URL to be updated.",
+                    "$ref": "#/definitions/autoupdateUrl"
                 },
                 "hash": {
                     "description": "Specifies how hashes are extracted.",
@@ -396,7 +408,7 @@
             }
         },
         "autoupdate": {
-            "description": "Specifies how the manifest is updated with different version.",
+            "description": "Specifies what properies (and how) should be updated when performing autoupdate.",
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -433,8 +445,7 @@
                 },
                 "url": {
                     "description": "Specifies the URL to be updated",
-                    "type": "string",
-                    "format": "uri"
+                    "$ref": "#/definitions/autoupdateUrl"
                 },
                 "hash": {
                     "description": "Specifies how the hashes are extracted",
@@ -453,7 +464,7 @@
     },
     "properties": {
         "$schema": {
-            "description": "Specifies which schema file should be used for intellisense/code-completion in text editor.",
+            "description": "Specify the path to the json schema, used for validation of the json file and extended editors support (intellisense/code-completion)",
             "type": "string"
         },
         "##": {

@@ -451,43 +451,6 @@ function Test-Aria2Enabled {
     process { return (Test-HelperInstalled -Helper 'Aria2') -and (get_config 'aria2-enabled' $true) }
 }
 
-function app_status($app, $global) {
-    $status = @{ }
-    $status.installed = (installed $app $global)
-    $status.version = Select-CurrentVersion -AppName $app -Global:$global
-    $status.latest_version = $status.version
-
-    $install_info = install_info $app $status.version $global
-
-    $status.failed = (!$install_info -or !$status.version)
-    $status.hold = ($install_info.hold -eq $true)
-
-    $manifest = manifest $app $install_info.bucket $install_info.url
-    $status.bucket = $install_info.bucket
-    $status.url = $install_info.url
-    $status.removed = (!$manifest)
-    if ($manifest.version) {
-        $status.latest_version = $manifest.version
-    }
-
-    $status.outdated = $false
-    if ($status.version -and $status.latest_version) {
-        $status.outdated = (Compare-Version -ReferenceVersion $status.version -DifferenceVersion $status.latest_version) -ne 0
-    }
-
-    $status.missing_deps = @()
-    # TODO: Eliminate
-    . (Join-Path $PSScriptRoot 'depends.ps1')
-    $deps = @(runtime_deps $manifest) | Where-Object {
-        $app, $bucket, $null = parse_app $_
-        return !(installed $app)
-    }
-
-    if ($deps) { $status.missing_deps += , $deps }
-
-    return $status
-}
-
 # paths
 function fname($path) { return Split-Path $path -Leaf }
 function strip_ext($fname) { return $fname -replace '\.[^\.]*$' }

@@ -26,6 +26,8 @@ function Test-Persistence {
     .PARAMETER Execution
         Specifies custom scriptblock to run when file is not persisted.
         https://github.com/lukesampson/scoop-extras/blob/a84b257fd9636d02295b48c3fd32826487ca9bd3/bucket/ditto.json#L25-L33
+    .PARAMETER Force
+        If file does not exist in $persist_dir, but in $dir, -Force has to be used to overwrite $dir file.
     #>
     [CmdletBinding()]
     param(
@@ -37,7 +39,8 @@ function Test-Persistence {
         [Object[]] $Content,
         [Parameter(ValueFromPipelineByPropertyName)]
         [Alias('ScriptBlock')]
-        [ScriptBlock] $Execution
+        [ScriptBlock] $Execution,
+        [Switch] $Force
     )
 
     process {
@@ -48,22 +51,29 @@ function Test-Persistence {
 
             if (!(Test-Path -LiteralPath $currentFilePersist -PathType 'Leaf')) {
                 if ($Execution) {
-                    & $Execution
-                } else {
-                    # Handle edge case when there is only one file and multiple contents caused by
-                    # If `Test-Persistence alfa.txt @('new', 'beta')` is used,
-                    # Powershell will bind Content as simple array with 2 values instead of Array with nested array with 2 values.
-                    if (($File.Count -eq 1) -and ($Content.Count -gt 1)) {
-                        $cont = $Content
-                    } elseif ($ind -lt $Content.Count) {
-                        $cont = $Content[$ind]
-                    } else {
-                        $cont = $null
+                    if ($Force -or !(Test-Path -LiteralPath $currentFileDir -PathType 'Leaf')) {
+                        Write-Verbose -Message "Executing ScriptBlock for '$currentFile' before persisting"
+                        & $Execution
                     }
+                } else {
+                    # Do not overwrite file in $dir, Only if does not exist or Force
+                    if ($Force -or !(Test-Path -LiteralPath $currentFileDir -PathType 'Leaf')) {
+                        # Handle edge case when there is only one file and multiple contents caused by
+                        # If `Test-Persistence alfa.txt @('new', 'beta')` is used,
+                        # Powershell will bind Content as simple array with 2 values instead of Array with nested array with 2 values.
+                        if (($File.Count -eq 1) -and ($Content.Count -gt 1)) {
+                            $cont = $Content
+                        } elseif ($ind -lt $Content.Count) {
+                            $cont = $Content[$ind]
+                        } else {
+                            $cont = $null
+                        }
 
-                    # File needs to be precreated in case of nested directories
-                    New-Item -Path $currentFileDir -ItemType 'File' -Force | Out-Null
-                    if ($cont) { Out-UTF8File -Path $currentFileDir -Value $cont }
+                        Write-Verbose -Message "Pre-creating file '$currentFile' before persisting"
+                        # File needs to be precreated in case of nested directories
+                        New-Item -Path $currentFileDir -ItemType 'File' -Force | Out-Null
+                        if ($cont) { Out-UTF8File -Path $currentFileDir -Value $cont }
+                    }
                 }
             }
         }

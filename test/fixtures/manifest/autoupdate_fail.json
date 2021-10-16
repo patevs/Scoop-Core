@@ -1,0 +1,31 @@
+{
+    "$schema": "../../../schema.json",
+    "version": "16.3.20211004",
+    "description": "Visual Paradigm Community Edition. UML CASE Tool supporting UML 2, SysML and Business Process Modeling Notation from the Object Management Group.",
+    "homepage": "https://www.visual-paradigm.com",
+    "license": {
+        "identifier": "Trialware",
+        "url": "https://www.visual-paradigm.com/product/licenseagreement.jsp?product=vp&edition=ce"
+    },
+    "architecture": {
+        "64bit": {
+            "url": "https://uk3.dl.visual-paradigm.com/visual-paradigm/vpce16.3/20211004/Visual_Paradigm_CE_16_3_20211004_Win64_InstallFree.zip",
+            "hash": "adadf9ddb33f55e261f4a97805a405e956caf3d861fca98c2bf1f5480b633197"
+        }
+    },
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "$baseurl/visual-paradigm/vpce$majorVersion.$minorVersion/$patchVersion/Visual_Paradigm_CE_${underscoreVersion}_Win64_InstallFree.zip#/alfa.something"
+            },
+            "32bit": {
+                "url": "https://uk3.dl.visual-paradigm.com/visual-paradigm/vpce$majorVersion.$minorVersion/$patchVersion/Visual_Paradigm_CE_${underscoreVersion}_Win64_InstallFree.zip"
+            }
+        },
+        "hash": {
+            "url": "nonhttps/checksum.html",
+            "regex": "$basename\\s*</td>\\s*<td>\\s*sha256: $sha256"
+        },
+        "extract_dir": "Visual Paradigm CE ${majorVersion}.${minorVersion}"
+    }
+}

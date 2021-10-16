@@ -10,11 +10,11 @@ Describe 'Pretty json formating' -Tag 'Scoop' {
 
     Context 'Beautify manifest' {
         $manifests | ForEach-Object {
-            if ($PSVersionTable.PSVersion.Major -gt 5) { $_ = $_.Name } # Fix for pwsh
+            $name = if ($PSVersionTable.PSVersion.Major -gt 5) { $_.Name } else { $_ } # Fix for pwsh
 
-            It "$_" {
-                $pretty_json = (parse_json "$format\unformated\$_") | ConvertToPrettyJson
-                $correct = (Get-Content "$format\formated\$_") -join "`r`n"
+            It "$name" {
+                $pretty_json = (parse_json "$format\unformated\$name") | ConvertToPrettyJson
+                $correct = (Get-Content "$format\formated\$name") -join "`r`n"
                 $correct.CompareTo($pretty_json) | Should Be 0
             }
         }

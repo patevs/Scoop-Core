@@ -11,8 +11,6 @@
     }
 }
 
-Join-Path $PSScriptRoot '..\supporting\yaml\bin\powershell-yaml.psd1' | Import-Module -Prefix 'CloudBase' -Verbose:$false
-
 $ALLOWED_MANIFEST_EXTENSION = @('json', 'yaml', 'yml')
 $ALLOWED_MANIFEST_EXTENSION_REGEX = $ALLOWED_MANIFEST_EXTENSION -join '|'
 
@@ -42,6 +40,10 @@ function ConvertFrom-Manifest {
                 $result = ConvertFrom-Json -InputObject $content -ErrorAction 'Stop'
             }
             { $_ -in '.yaml', '.yml' } {
+                if (!(Get-Module -Name 'powershell-yaml')) {
+                    Join-Path $PSScriptRoot '..\supporting\yaml\bin\powershell-yaml.psd1' | Import-Module -Prefix 'CloudBase' -Verbose:$false
+                }
+
                 # Ugly hotfix to prevent ordering of properties and PSCustomObject
                 $result = ConvertFrom-CloudBaseYaml -Yaml $content -Ordered | ConvertTo-Json -Depth 100 | ConvertFrom-Json
             }
@@ -89,6 +91,10 @@ function ConvertTo-Manifest {
                 $content = $content -replace "`t", (' ' * 4)
             }
             { $_ -in 'yaml', 'yml' } {
+                if (!(Get-Module -Name 'powershell-yaml')) {
+                    Join-Path $PSScriptRoot '..\supporting\yaml\bin\powershell-yaml.psd1' | Import-Module -Prefix 'CloudBase' -Verbose:$false
+                }
+
                 $content = ConvertTo-CloudBaseYaml -Data $Manifest
                 $content = $content.TrimEnd("`r`n") # For some reason it produces two line endings at the end
             }
@@ -533,7 +539,7 @@ function installed_manifest($app, $version, $global, [Switch] $PathOnly) {
 
     # Different extension types
     if (!(Test-Path $manifestPath)) {
-        $installedManifests = Get-ChildItem -LiteralPath $d -Include 'scoop-manifest.*'
+        $installedManifests = Get-ChildItem -LiteralPath $d -Include 'scoop-manifest.*' -ErrorAction 'SilentlyContinue'
         if ($installedManifests.Count -gt 0) {
             $manifestPath = $installedManifests[0].FullName
         }

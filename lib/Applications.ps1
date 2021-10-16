@@ -3,6 +3,7 @@
     @('Helpers', 'New-IssuePrompt'),
     @('json', 'ConvertToPrettyJson'),
     @('manifest', 'Resolve-ManifestInformation'),
+    @('depends', 'script_deps'),
     @('Versions', 'Clear-InstalledVersion')
 ) | ForEach-Object {
     if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {
@@ -166,3 +167,38 @@ function Set-InstalledApplicationInformationPropertyValue {
     }
 }
 #endregion Application instalaltion info file
+
+function app_status($app, $global) {
+    $status = @{ }
+    $status.installed = (installed $app $global)
+    $status.version = Select-CurrentVersion -AppName $app -Global:$global
+    $status.latest_version = $status.version
+
+    $install_info = install_info $app $status.version $global
+
+    $status.failed = (!$install_info -or !$status.version)
+    $status.hold = ($install_info.hold -eq $true)
+
+    $manifest = manifest $app $install_info.bucket $install_info.url
+    $status.bucket = $install_info.bucket
+    $status.url = $install_info.url
+    $status.removed = (!$manifest)
+    if ($manifest.version) {
+        $status.latest_version = $manifest.version
+    }
+
+    $status.outdated = $false
+    if ($status.version -and $status.latest_version) {
+        $status.outdated = (Compare-Version -ReferenceVersion $status.version -DifferenceVersion $status.latest_version) -ne 0
+    }
+
+    $status.missing_deps = @()
+    $deps = @(runtime_deps $manifest) | Where-Object {
+        $app, $bucket, $null = parse_app $_
+        return !(installed $app)
+    }
+
+    if ($deps) { $status.missing_deps += , $deps }
+
+    return $status
+}

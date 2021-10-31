@@ -43,7 +43,7 @@
 #
 # MSIEXTRACT_USE_LESSMSI: $true|$false
 #   Prefer lessmsi utility over native msiexec for installation of msi based installers.
-#   This is preferred option and will be default in future.
+#   Lessmsi is preferred option. Default to $true as of 2021-10-16.
 #
 # INNOSETUP_USE_INNOEXTRACT: $true|$false
 #   Prefer innoextract utility over innounp for installation of innosetup based installers.
@@ -74,6 +74,9 @@
 # githubToken:
 #   GitHub API token used for checkver/autoupdate runs to prevent rate limiting.
 #   See: 'https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token'
+#
+# dbgBypassArmCheck: $true|$false
+#   Do not fail to install arm64 version on x86 platform.
 #
 # ARIA2 configuration
 # -------------------

@@ -54,9 +54,11 @@ function Invoke-GitCmd {
                 $para = @(
                     '--no-decorate'
                     '--format="tformat: * %C(yellow)%h%Creset %<|(72,trunc)%s %C(cyan)%cr%Creset"'
-                    '--grep="\[\(scoop\|shovel\) skip\]"' # Ignore [scoop skip] [shovel skip]
-                    '--grep="^Merge [cb]"' # Ignore merge commits
+                    '--regexp-ignore-case'
+                    '--extended-regexp'
                     '--invert-grep'
+                    '--grep="\[(scoop|shovel) skip\]"' # Ignore [scoop skip] [shovel skip]
+                    '--grep="^Merge [pcb]"' # Ignore merge commits
                 )
                 $Argument = $para + $Argument
             }

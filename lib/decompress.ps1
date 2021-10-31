@@ -59,7 +59,7 @@ function Test-LessmsiRequirement {
 
     if ($null -eq $URL) { return $false }
 
-    if (get_config 'MSIEXTRACT_USE_LESSMSI' $false) {
+    if (get_config 'MSIEXTRACT_USE_LESSMSI' $true) {
         return ($URL | Where-Object { $_ -match '\.msi$' }).Count -gt 0
     } else {
         return $false
@@ -218,7 +218,7 @@ function Expand-MsiArchive {
             $DestinationPath = Join-Path $DestinationPath '_tmp'
         }
 
-        if ((get_config 'MSIEXTRACT_USE_LESSMSI' $false)) {
+        if ((get_config 'MSIEXTRACT_USE_LESSMSI' $true)) {
             $msiPath = Get-HelperPath -Helper 'Lessmsi'
             $argList = @('x', "`"$Path`"", "`"$DestinationPath\\`"")
         } else {

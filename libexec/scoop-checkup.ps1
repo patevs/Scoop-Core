@@ -26,7 +26,7 @@ if ($_err) { Stop-ScoopExecution -Message "scoop checkup: $_err" -ExitCode 2 }
 
 $Problems += !(Test-DiagWindowsDefender)
 $Problems += !(Test-DiagWindowsDefender -Global)
-$Problems += !(Test-DiagMainBucketAdded)
+$Problems += !(Test-DiagBucket)
 $Problems += !(Test-DiagLongPathEnabled)
 $Problems += !(Test-DiagEnvironmentVariable)
 $Problems += !(Test-DiagHelpersInstalled)

@@ -13,6 +13,7 @@
     @('help', 'scoop_help'),
     @('Helpers', 'New-IssuePrompt'),
     @('install', 'install_app'),
+    @('Applications', 'Get-InstalledApplicationInformation'),
     @('manifest', 'Resolve-ManifestInformation'),
     @('psmodules', 'install_psmodule'),
     @('shortcuts', 'rm_startmenu_shortcuts'),

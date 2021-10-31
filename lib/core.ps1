@@ -812,54 +812,6 @@ function ensure_architecture($architecture_opt) {
     }
 }
 
-function Confirm-InstallationStatus {
-    <#
-    .SYNOPSIS
-        Get status of specific applications.
-        Returns array of 3 item arrays (appliation name, globally installed, bucket name)
-    .PARAMETER Apps
-        Specifies the array of applications to be evalueated.
-    .PARAMETER Global
-        Specifies to check globally installed applications.
-    #>
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)]
-        [String[]] $Apps,
-        [Switch] $Global
-    )
-    $Global | Out-Null # PowerShell/PSScriptAnalyzer#1472
-    $installed = @()
-
-    $Apps | Select-Object -Unique | Where-Object -Property 'Name' -NE -Value 'scoop' | ForEach-Object {
-        # TODO: Adopt Resolve-ManifestInformation
-        # Should not be needed to resolve, as it will contain only valid installed applications
-        $app, $null, $null = parse_app $_
-        $buc = (app_status $app $Global).bucket
-        if ($Global) {
-            if (installed $app $true) {
-                $installed += , @($app, $true, $buc)
-            } elseif (installed $app $false) {
-                Write-UserMessage -Message "'$app' isn't installed globally, but it is installed for your account." -Err
-                Write-UserMessage -Message 'Try again without the --global (or -g) flag instead.' -Warning
-            } else {
-                Write-UserMessage -Message "'$app' isn't installed." -Err
-            }
-        } else {
-            if (installed $app $false) {
-                $installed += , @($app, $false, $buc)
-            } elseif (installed $app $true) {
-                Write-UserMessage -Message "'$app' isn't installed for your account, but it is installed globally." -Err
-                Write-UserMessage -Message 'Try again with the --global (or -g) flag instead.' -Warning
-            } else {
-                Write-UserMessage -Message "'$app' isn't installed." -Err
-            }
-        }
-    }
-
-    return , $installed
-}
-
 function strip_path($orig_path, $dir) {
     if ($null -eq $orig_path) { $orig_path = '' }
     $stripped = [string]::join(';', @( $orig_path.split(';') | Where-Object { $_ -and $_ -ne $dir } ))

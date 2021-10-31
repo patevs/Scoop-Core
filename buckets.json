@@ -1,15 +1,15 @@
 {
     "Base": "https://github.com/shovel-org/Base",
     "main": "https://github.com/ScoopInstaller/Main",
-    "extras": "https://github.com/lukesampson/scoop-extras",
-    "versions": "https://github.com/ScoopInstaller/Versions",
-    "nerd-fonts": "https://github.com/matthewjberger/scoop-nerd-fonts",
+    "extras": "https://github.com/ScoopInstaller/Extras",
     "java": "https://github.com/ScoopInstaller/Java",
-    "php": "https://github.com/ScoopInstaller/PHP",
-    "games": "https://github.com/Calinou/scoop-games",
-    "nightlies": "https://github.com/ScoopInstaller/Nightlies",
+    "nerd-fonts": "https://github.com/matthewjberger/scoop-nerd-fonts",
     "nirsoft": "https://github.com/Ash258/Scoop-NirSoft",
-    "nonportable": "https://github.com/TheRandomLabs/scoop-nonportable",
     "jetbrains": "https://github.com/Ash258/Scoop-JetBrains",
-    "sysinternals": "https://github.com/Ash258/Scoop-SysInternals"
+    "sysinternals": "https://github.com/Ash258/Scoop-SysInternals",
+    "nonportable": "https://github.com/TheRandomLabs/scoop-nonportable",
+    "games": "https://github.com/Calinou/scoop-games",
+    "php": "https://github.com/ScoopInstaller/PHP",
+    "versions": "https://github.com/ScoopInstaller/Versions",
+    "nightlies": "https://github.com/ScoopInstaller/Nightlies"
 }

@@ -2,6 +2,13 @@
 
 ## [0.6.5](https://github.com/Ash258/Scoop-Core/milestone/5)
 
+### [0.6.5-pre1]
+
+- **scoop-config**:
+    - Consider lessmsi as default for msi extraction
+    - Add config option `dbgBypassArmCheck`
+        - Installation will not fail when installing arm64 version on x86.
+        - For debugging purpose, to simulate the installation of arm64 version
 - Internal modules/libs are loaded only when not loaded already
 - **scoop-install**: Fix independent installations
 - Initial support for manipulation with `arm64` based manifests

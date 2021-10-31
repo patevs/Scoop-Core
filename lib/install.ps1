@@ -31,7 +31,10 @@ function Deny-ArmInstallation {
                 throw [ScoopException] "Manifest does not explicitly support 'arm64' architecture. Try to install with '--arch 32bit' or '--arch 64bit' to use Windows arm emulation."
             }
         } else {
-            if ($Architecture -eq 'arm64') { throw [ScoopException] "Installation of 'arm64' version is not supported on x86 based system" }
+            if ($Architecture -eq 'arm64') {
+                if ($true -eq (get_config 'dbgBypassArmCheck' $false)) { return }
+                throw [ScoopException] "Installation of 'arm64' version is not supported on x86 based system"
+            }
         }
     }
 }

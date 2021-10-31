@@ -19,6 +19,7 @@
     @('getopt', 'Resolve-GetOpt'),
     @('help', 'scoop_help'),
     @('Helpers', 'New-IssuePrompt'),
+    @('Applications', 'Get-InstalledApplicationInformation'),
     @('depends', 'script_deps'),
     @('install', 'install_app'),
     @('manifest', 'Resolve-ManifestInformation'),

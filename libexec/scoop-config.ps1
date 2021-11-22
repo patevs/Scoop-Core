@@ -55,7 +55,7 @@
 # debug: $true|$false
 #   Additional output will be shown to identify possible source of problems.
 #
-# SCOOP_REPO: http://github.com/lukesampson/scoop
+# SCOOP_REPO: http://github.com/ScoopInstaller/Scoop
 #   Git repository containining scoop source code.
 #   This configuration is useful for custom tweaked forks.
 #

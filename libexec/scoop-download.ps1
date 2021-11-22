@@ -42,6 +42,12 @@ if ($opt.b -or $opt.'all-architectures') { $Architecture = $SHOVEL_SUPPORTED_ARC
 $exitCode = 0
 $problems = 0
 
+try {
+    Confirm-DirectoryExistence -LiteralPath $SCOOP_CACHE_DIRECTORY | Out-Null
+} catch {
+    Stop-ScoopExecution -Message "Could not create cache directory: '$SCOOP_CACHE_DIRECTORY' ($($_.Exception.Message))"
+}
+
 foreach ($app in $application) {
     $resolved = $null
     try {

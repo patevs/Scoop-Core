@@ -12,7 +12,9 @@ function command_files {
     $libExec = Join-Path $PSScriptRoot '..\libexec'
     $shims = Join-Path $SCOOP_ROOT_DIRECTORY 'shims'
 
-    return Get-ChildItem $libExec, $shims | Where-Object -Property 'Name' -Match -Value 'scoop-.*?\.ps1$'
+    Confirm-DirectoryExistence -LiteralPath $shims | Out-Null
+
+    return Get-ChildItem -LiteralPath $libExec, $shims -ErrorAction 'SilentlyContinue' | Where-Object -Property 'Name' -Match -Value 'scoop-.*?\.ps1$'
 }
 
 function command_name($filename) {

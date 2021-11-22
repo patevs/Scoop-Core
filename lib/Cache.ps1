@@ -45,7 +45,7 @@ function Show-CachedFileList {
         $regex = $ApplicationFilter -join '|'
         if (!$ApplicationFilter) { $regex = '.*?' }
 
-        $files = Get-ChildItem -LiteralPath $SCOOP_CACHE_DIRECTORY -File | Where-Object -Property 'Name' -Match -Value "^($regex)#"
+        $files = Get-ChildItem -LiteralPath $SCOOP_CACHE_DIRECTORY -ErrorAction 'SilentlyContinue' -File | Where-Object -Property 'Name' -Match -Value "^($regex)#"
         $totalSize = [double] ($files | Measure-Object -Property 'Length' -Sum).Sum
 
         $_app = @{ 'Expression' = { "$($_.app) ($($_.version))" } }

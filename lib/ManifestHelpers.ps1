@@ -25,7 +25,7 @@ function Test-Persistence {
         Value should be array of strings or string.
     .PARAMETER Execution
         Specifies custom scriptblock to run when file is not persisted.
-        https://github.com/lukesampson/scoop-extras/blob/a84b257fd9636d02295b48c3fd32826487ca9bd3/bucket/ditto.json#L25-L33
+        https://github.com/ScoopInstaller/Extras/blob/a84b257fd9636d02295b48c3fd32826487ca9bd3/bucket/ditto.json#L25-L33
     .PARAMETER Force
         If file does not exist in $persist_dir, but in $dir, -Force has to be used to overwrite $dir file.
     #>

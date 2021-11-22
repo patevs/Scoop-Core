@@ -2,6 +2,11 @@
 
 ## [0.6.5](https://github.com/Ash258/Scoop-Core/milestone/5)
 
+- Adopt new resolve function for parameter passing
+    - **scoop-info**
+- Respect `NO_JUNCTIONS` config when resolving helper utilities
+    - Fallback to executable from PATH when the utility is not installed via scoop.
+
 ### [0.6.5-pre1]
 
 - **scoop-config**:

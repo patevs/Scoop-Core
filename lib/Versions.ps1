@@ -95,7 +95,7 @@ function Select-CurrentVersion {
         $appPath = appdir $AppName $Global
 
         $currentPath = Join-Path $appPath 'current'
-        if (Test-Path $currentPath -PathType 'Container') {
+        if (Test-Path -LiteralPath $currentPath -PathType 'Container') {
             $currentVersion = (installed_manifest $AppName 'current' $Global).version
             # Get version from link target in case of nightly
             if ($currentVersion -eq 'nightly') { $currentVersion = ((Get-Item $currentPath).Target | Get-Item).BaseName }
@@ -138,7 +138,7 @@ function Compare-Version {
     )
 
     process {
-        # Use '+' sign as post-release, see https://github.com/lukesampson/scoop/pull/3721#issuecomment-553718093
+        # Use '+' sign as post-release, see https://github.com/ScoopInstaller/Scoop/pull/3721#issuecomment-553718093
         $ReferenceVersion, $DifferenceVersion = @($ReferenceVersion, $DifferenceVersion) -replace '\+', '-'
 
         # Return 0 if versions are strictly equal

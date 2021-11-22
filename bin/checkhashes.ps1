@@ -14,7 +14,7 @@
     Specifies to not show manifest without mismatched hashes.
 .PARAMETER UseCache
     Specifies to not delete downloaded files from cache.
-    Should not be used, because check should be used for downloading actual version of file (as normal user, not finding in some document from vendors, which could be damaged / wrong (Example: Slack@3.3.1 lukesampson/scoop-extras#1192)), not some previously downloaded.
+    Should not be used, because check should be used for downloading actual version of file (as normal user, not finding in some document from vendors, which could be damaged / wrong (Example: Slack@3.3.1 ScoopInstaller/Extras#1192)), not some previously downloaded.
 .EXAMPLE
     PS BUCKETROOT> .\bin\checkhashes.ps1
     Check all manifests for hash mismatch.

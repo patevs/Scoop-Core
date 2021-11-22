@@ -353,14 +353,20 @@ function Get-AppFilePath {
         [String] $File
     )
 
-    # TODO: Support NO_JUNCTIONS
     # Normal path to file
-    $path = versiondir $App 'current' $false | Join-Path -ChildPath $File
-    if (Test-Path $path) { return $path }
+    $path = versiondir $App (Select-CurrentVersion -AppName $App) $false | Join-Path -ChildPath $File
+    if (Test-Path -LiteralPath $path -PathType 'Leaf') { return $path }
 
     # Global path to file
-    $path = versiondir $App 'current' $true | Join-Path -ChildPath $File
-    if (Test-Path $path) { return $path }
+    $path = versiondir $App (Select-CurrentVersion -AppName $App -Global) $true | Join-Path -ChildPath $File
+    if (Test-Path -LiteralPath $path -PathType 'Leaf') { return $path }
+
+    # Try path
+    $path = Get-Command -Name $File -ErrorAction 'SilentlyContinue'
+    if ($path -and (Test-Path -LiteralPath $path.Source -PathType 'Leaf')) {
+        Write-UserMessage "Application '$App' is not installed via Scoop. Trying to use '$($path.Source)'" -Warning
+        return $path
+    }
 
     # Not found
     return $null

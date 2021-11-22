@@ -601,6 +601,12 @@ function dl_urls($app, $version, $manifest, $bucket, $architecture, $dir, $use_c
     $extract_tos = @(extract_to $manifest $architecture)
     $extracted = 0
 
+    try {
+        Confirm-DirectoryExistence -LiteralPath $SCOOP_CACHE_DIRECTORY | Out-Null
+    } catch {
+        throw [ScoopException] "Could not create cache directory: '$SCOOP_CACHE_DIRECTORY'"
+    }
+
     # Download first
     if (Test-Aria2Enabled) {
         dl_with_cache_aria2 $app $version $manifest $architecture $dir $cookies $use_cache $check_hash

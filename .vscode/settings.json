@@ -31,52 +31,45 @@
         {
             "url": "https://raw.githubusercontent.com/Ash258/Scoop-Core/NEW/schema.json",
             "fileMatch": [
-                "bucket/*.json*",
-                "deprecated/*.json*",
-                "TODO/*.json*",
-                "supporting/*.json*",
+                "bucket/**/*.json*",
+                "deprecated/**/*.json*",
+                "TODO/**/*.json*",
+                "supporting/**/*.json*",
             ],
         },
     ],
     "task.autoDetect": "off",
-    "terminal.integrated.shell.windows": "powershell.exe",
-    "terminal.integrated.shellArgs.windows": [
-        "-NoLogo",
-        "-NoExit",
-    ],
+    "terminal.integrated.defaultProfile.windows": "PowerShell",
+    "terminal.integrated.profiles.windows": {
+        "PowerShell": {
+            "path": "powershell.exe",
+            "args": [
+                "-NoLogo",
+                "-NoExit",
+            ],
+        },
+        "PowerShell Core": {
+            "path": [
+                "${env:SCOOP_GLOBAL}\\apps\\pwsh\\current\\pwsh.exe",
+                "${env:SCOOP}\\apps\\pwsh\\current\\pwsh.exe",
+            ],
+            "args": [
+                "-NoLogo",
+                "-NoExit",
+            ],
+        },
+        "PowerShell Core (Preview)": {
+            "path": [
+                "${env:SCOOP_GLOBAL}\\apps\\pwsh-preview\\current\\pwsh.exe",
+                "${env:SCOOP}\\apps\\pwsh-preview\\current\\pwsh.exe",
+            ],
+            "args": [
+                "-NoLogo",
+                "-NoExit",
+            ],
+        },
+    },
     "terminal.integrated.windowsEnableConpty": true,
-    "terminals.terminals": [
-        {
-            "name": "Powershell",
-            "shellPath": "powershell.exe",
-            "shellArgs": [
-                "-NoLogo",
-                "-NoExit",
-            ],
-            "focus": true,
-            "open": true,
-        },
-        {
-            "name": "Powershell Core",
-            "shellPath": "pwsh.exe",
-            "shellArgs": [
-                "-NoLogo",
-                "-NoExit",
-            ],
-            "focus": true,
-            "open": true,
-        },
-        {
-            "name": "Powershell Core Preview",
-            "shellPath": "pwsh-preview.exe",
-            "shellArgs": [
-                "-NoLogo",
-                "-NoExit",
-            ],
-            "focus": true,
-            "open": true,
-        },
-    ],
     // #region Language Specific settings
     "markdown.extension.italic.indicator": "_",
     "markdown.extension.list.indentationSize": "inherit",
@@ -125,16 +118,16 @@
     "yaml.hover": true,
     "yaml.schemas": {
         "https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json": [
-            "github/workflows/*",
+            "github/workflows/**/*",
         ],
         "https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/appveyor.json": [
-            "appveyor.y*(a)ml",
+            "*appveyor.y*(a)ml",
         ],
         "https://raw.githubusercontent.com/Ash258/Scoop-Core/NEW/schema.json": [
-            "bucket/*.y*ml",
-            "deprecated/*.y*ml",
-            "TODO/*.y*ml",
-            "supporting/*.y*ml",
+            "bucket/**/*.y*ml",
+            "deprecated/**/*.y*ml",
+            "TODO/**/*.y*ml",
+            "supporting/**/*.y*ml",
         ],
     },
     "yaml.schemaStore.enable": true,

@@ -2,6 +2,7 @@
 
 ## [0.6.5](https://github.com/Ash258/Scoop-Core/milestone/5)
 
+- **scoop-config**: Add `--global`, `-g` options
 - Adopt new resolve function for parameter passing
     - **scoop-info**
 - Respect `NO_JUNCTIONS` config when resolving helper utilities
@@ -37,7 +38,6 @@
     - Support validation of all archived manifests
 - **scoop-cat**: Add `-f`, `--format` options
 - Adopt new resolve function for parameter passing
-    - **scoop-info**
     - **scoop-search**
     - **scoop-home**
     - **scoop-cat**

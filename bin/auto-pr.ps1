@@ -56,7 +56,7 @@ $checkverPath = Join-Path $PSScriptRoot 'checkver.ps1'
 }
 
 if ($Help -or (!$Push -and !$Request) -or ($Request -and !$Upstream)) {
-    Write-UserMessage @'
+    Write-UserMessage -Messsage @'
 Usage: auto-pr.ps1 [OPTION]
 
 Mandatory options:
@@ -107,20 +107,20 @@ function pull_requests($json, [String] $app, [String] $upstream, [String] $manif
 
     $master = _selectMasterBranch
     execute "hub $repoContext checkout $master"
-    Write-UserMessage "hub rev-parse --verify $branch" -ForegroundColor 'Green'
+    Write-UserMessage -Message "hub rev-parse --verify $branch" -ForegroundColor 'Green'
     hub -C "$RepositoryRoot" rev-parse --verify $branch
 
     if ($LASTEXITCODE -eq 0) {
-        Write-UserMessage "Skipping update $app ($version) ..." -ForegroundColor 'Yellow'
+        Write-UserMessage -Message "Skipping update $app ($version) ..." -ForegroundColor 'Yellow'
         ++$problems
         return
     }
 
-    Write-UserMessage "Creating update $app ($version) ..." -ForegroundColor 'DarkCyan'
+    Write-UserMessage -Message "Creating update $app ($version) ..." -ForegroundColor 'DarkCyan'
     execute "hub $repoContext checkout -b $branch"
     execute "hub $repoContext add $manifestFile"
     execute "hub $repoContext commit -m '${app}: Update to version $version'"
-    Write-UserMessage "Pushing update $app ($version) ..." -ForegroundColor 'DarkCyan'
+    Write-UserMessage -Message "Pushing update $app ($version) ..." -ForegroundColor 'DarkCyan'
     execute "hub $repoContext push origin $branch"
 
     if ($LASTEXITCODE -gt 0) {
@@ -131,8 +131,8 @@ function pull_requests($json, [String] $app, [String] $upstream, [String] $manif
     }
 
     Start-Sleep -Seconds 1
-    Write-UserMessage "Pull-Request update $app ($version) ..." -ForegroundColor 'DarkCyan'
-    Write-UserMessage "hub pull-request -m '<msg>' -b '$upstream' -h '$branch'" -ForegroundColor 'Green'
+    Write-UserMessage -Message "Pull-Request update $app ($version) ..." -ForegroundColor 'DarkCyan'
+    Write-UserMessage -Message "hub pull-request -m '<msg>' -b '$upstream' -h '$branch'" -ForegroundColor 'Green'
 
     $msg = @"
 ${app}: Update to version $version
@@ -168,7 +168,7 @@ $RepositoryRoot = $RepositoryRoot.TrimEnd('/').TrimEnd('\') # Just in case
 $repoContext = "-C ""$RepositoryRoot"""
 $splat = @{ 'Repository' = $RepositoryRoot }
 
-Write-UserMessage 'Updating ...' -ForegroundColor 'DarkCyan'
+Write-UserMessage -Message 'Updating ...' -ForegroundColor 'DarkCyan'
 $master = _selectMasterBranch
 if ($Push) {
     _gitWrapper @splat -Command 'pull' -Argument 'origin', $master -Proxy
@@ -197,14 +197,14 @@ foreach ($changedFile in $manifestsToUpdate) {
     $gci = Get-Item "$RepositoryRoot\$changedFile"
     $applicationName = $gci.BaseName
     if ($gci.Extension -notmatch "\.($ALLOWED_MANIFEST_EXTENSION_REGEX)") {
-        Write-UserMessage "Skipping $changedFile" -Info
+        Write-UserMessage -Message "Skipping $changedFile" -Info
         continue
     }
 
     try {
         $manifestObject = ConvertFrom-Manifest -Path $gci.FullName
     } catch {
-        Write-UserMessage "Invalid manifest: $changedFile" -Err
+        Write-UserMessage -Message "Invalid manifest: $changedFile" -Err
         ++$problems
         continue
     }
@@ -217,7 +217,7 @@ foreach ($changedFile in $manifestsToUpdate) {
     }
 
     if ($Push) {
-        Write-UserMessage "Creating update $applicationName ($version) ..." -ForegroundColor 'DarkCyan'
+        Write-UserMessage -Message "Creating update $applicationName ($version) ..." -ForegroundColor 'DarkCyan'
 
         _gitWrapper @splat -Command 'add' -Argument """$changedFile"""
 
@@ -245,7 +245,7 @@ foreach ($changedFile in $manifestsToUpdate) {
             }
             _gitWrapper @splat -Command 'commit' -Argument $commitA
         } else {
-            Write-UserMessage "Skipping $applicationName because only LF/CRLF changes were detected ..." -Info
+            Write-UserMessage -Message "Skipping $applicationName because only LF/CRLF changes were detected ..." -Info
         }
     } else {
         pull_requests $manifestObject $applicationName $Upstream $changedFile
@@ -253,10 +253,10 @@ foreach ($changedFile in $manifestsToUpdate) {
 }
 
 if ($Push) {
-    Write-UserMessage 'Pushing updates ...' -ForegroundColor 'DarkCyan'
+    Write-UserMessage -Message 'Pushing updates ...' -ForegroundColor 'DarkCyan'
     _gitWrapper @splat -Command 'push' -Argument 'origin', $master -Proxy
 } else {
-    Write-UserMessage "Returning to $master branch and removing unstaged files ..." -ForegroundColor 'DarkCyan'
+    Write-UserMessage -Message "Returning to $master branch and removing unstaged files ..." -ForegroundColor 'DarkCyan'
     _gitWrapper @splat -Command 'checkout' -Argument '--force', $master -Proxy
 }
 

@@ -50,14 +50,14 @@ $problems = 0
 if (!$UseCache) { Join-Path $SCOOP_CACHE_DIRECTORY '*HASH_CHECK*' | Remove-Item -ErrorAction 'SilentlyContinue' -Force -Recurse }
 
 function err ([String] $name, [String[]] $message) {
-    Write-UserMessage "${name}: ", ($message -join "`r`n") -Color 'Red'
+    Write-UserMessage -Message "${name}: ", ($message -join "`r`n") -Color 'Red'
 }
 
 $MANIFESTS = @()
 # Gather all required manifests
 foreach ($gci in Get-ChildItem $Dir "$App.*" -File) {
     if ($gci.Extension -notmatch "\.($ALLOWED_MANIFEST_EXTENSION_REGEX)") {
-        Write-UserMessage "Skipping $($gci.Name)" -Info
+        Write-UserMessage -Message "Skipping $($gci.Name)" -Info
         continue
     }
 

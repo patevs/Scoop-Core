@@ -364,7 +364,7 @@ function Get-AppFilePath {
     # Try path
     $path = Get-Command -Name $File -ErrorAction 'SilentlyContinue'
     if ($path -and (Test-Path -LiteralPath $path.Source -PathType 'Leaf')) {
-        Write-UserMessage "Application '$App' is not installed via Scoop. Trying to use '$($path.Source)'" -Warning
+        Write-UserMessage -Message "Application '$App' is not installed via Scoop. Trying to use '$($path.Source)'" -Warning
         return $path
     }
 

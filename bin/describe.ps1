@@ -29,7 +29,7 @@ $Queue = @()
 
 foreach ($m in Get-ChildItem $Dir "$App.*" -File) {
     if ($m.Extension -notmatch "\.($ALLOWED_MANIFEST_EXTENSION_REGEX)") {
-        Write-UserMessage "Skipping $($m.Name)" -Info
+        Write-UserMessage -Message "Skipping $($m.Name)" -Info
         continue
     }
 

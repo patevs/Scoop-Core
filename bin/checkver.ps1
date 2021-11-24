@@ -205,7 +205,7 @@ function Invoke-Check {
     if ($ForceUpdate) {
         $Update = $true
     } elseif ($Update -and ($json.autoupdate.disable -and ($json.autoupdate.disable -eq $true))) {
-        Write-UserMessage "${appName}: Skipping disabled autoupdate" -Info
+        Write-UserMessage -Message "${appName}: Skipping disabled autoupdate" -Info
         return
     }
 
@@ -233,7 +233,7 @@ Get-Event | ForEach-Object { Remove-Event $_.SourceIdentifier }
 #region Main
 foreach ($ff in Get-ChildItem $Dir "$Search.*" -File) {
     if ($ff.Extension -notmatch "\.($ALLOWED_MANIFEST_EXTENSION_REGEX)") {
-        Write-UserMessage "Skipping $($ff.Name)" -Info
+        Write-UserMessage -Message "Skipping $($ff.Name)" -Info
         continue
     }
 
@@ -246,7 +246,7 @@ foreach ($ff in Get-ChildItem $Dir "$Search.*" -File) {
     }
     if ($m.checkver) {
         if (!$ForceUpdate -and ($m.checkver.disable -and ($m.checkver.disable -eq $true))) {
-            Write-UserMessage "$($ff.BaseName): Skipping disabled checkver" -Info
+            Write-UserMessage -Message "$($ff.BaseName): Skipping disabled checkver" -Info
             continue
         }
         $Queue += , @($ff, $m)

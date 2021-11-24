@@ -76,7 +76,7 @@ if (!$Applications) {
 
             if ($force -or $status.outdated) {
                 if ($status.hold) {
-                    Write-UserMessage "'$app' is held to version $($status.version)"
+                    Write-UserMessage -Message "'$app' is held to version $($status.version)"
                 } else {
                     $outdatedApplications += applist $app $global $bb
                     $globText = if ($global) { ' (global)' } else { '' }

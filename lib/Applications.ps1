@@ -193,6 +193,7 @@ function app_status($app, $global) {
     }
 
     $status.missing_deps = @()
+    # TODO: Adopt Resolve-ManifestInformation
     $deps = @(Resolve-DependsProperty $manifest) | Where-Object {
         $app, $bucket, $null = parse_app $_
         return !(installed $app)

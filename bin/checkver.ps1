@@ -110,10 +110,10 @@ function Invoke-Check {
     $page = $EventToCheck.SourceEventArgs.Result
     $err = $EventToCheck.SourceEventArgs.Error
 
-    if (Test-ScoopDebugEnabled) { Join-Path $PWD 'checkver-page.html' | Out-UTF8Content -Content $page }
+    if ($SHOVEL_DEBUG_ENABLED) { Join-Path $PWD 'checkver-page.html' | Out-UTF8Content -Content $page }
     if ($json.checkver.script) {
         $page = $json.checkver.script -join "`r`n" | Invoke-Expression
-        if (Test-ScoopDebugEnabled) { Join-Path $PWD 'checkver-page-script.html' | Out-UTF8Content -Content $page }
+        if ($SHOVEL_DEBUG_ENABLED) { Join-Path $PWD 'checkver-page-script.html' | Out-UTF8Content -Content $page }
     }
 
     if ($err) {

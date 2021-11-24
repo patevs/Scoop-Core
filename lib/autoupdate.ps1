@@ -22,7 +22,7 @@ function find_hash_in_rdf([String] $url, [String] $basename) {
 
         return $null
     }
-    if (Test-ScoopDebugEnabled) { Join-Path $PWD 'checkver-hash-rdf.html' | Out-UTF8Content -Content $data }
+    if ($SHOVEL_DEBUG_ENABLED) { Join-Path $PWD 'checkver-hash-rdf.html' | Out-UTF8Content -Content $data }
     $data = [xml] $data
 
     # Find file content
@@ -52,7 +52,7 @@ function find_hash_in_textfile([String] $url, [Hashtable] $substitutions, [Strin
         Write-UserMessage -Message $_, "URL $url is not valid" -Color 'DarkRed'
         return
     }
-    if (Test-ScoopDebugEnabled) { Join-Path $PWD 'checkver-hash-txt.html' | Out-UTF8Content -Content $hashfile }
+    if ($SHOVEL_DEBUG_ENABLED) { Join-Path $PWD 'checkver-hash-txt.html' | Out-UTF8Content -Content $hashfile }
 
     if ($regex.Length -eq 0) { $regex = '^([a-fA-F\d]+)$' }
 
@@ -96,7 +96,7 @@ function find_hash_in_json([String] $url, [Hashtable] $substitutions, [String] $
         Write-UserMessage -Message $_, "URL $url is not valid" -Color 'DarkRed'
         return
     }
-    if (Test-ScoopDebugEnabled) { Join-Path $PWD 'checkver-hash-json.html' | Out-UTF8Content -Content $json }
+    if ($SHOVEL_DEBUG_ENABLED) { Join-Path $PWD 'checkver-hash-json.html' | Out-UTF8Content -Content $json }
 
     $hash = json_path $json $jsonpath $substitutions
     if (!$hash) {
@@ -119,7 +119,7 @@ function find_hash_in_xml([String] $url, [Hashtable] $substitutions, [String] $x
         return
     }
 
-    if (Test-ScoopDebugEnabled) { Join-Path $PWD 'checkver-hash-xml.html' | Out-UTF8Content -Content $xml }
+    if ($SHOVEL_DEBUG_ENABLED) { Join-Path $PWD 'checkver-hash-xml.html' | Out-UTF8Content -Content $xml }
     $xml = [xml] $xml
 
     # Replace placeholders

@@ -108,5 +108,72 @@ function Resolve-InstallationDependency {
     end { return $dependencies | Select-Object -Unique }
 }
 
-function ___alfa {
+function Get-ApplicationDependency {
+    [CmdletBinding()]
+    param([String] $ApplicationQuery, [String] $Architecture, [Switch] $IncludeInstalled)
+
+    begin {
+        $resolved = New-Object System.Collections.ArrayList
+    }
+
+    process {
+        Resolve-SpecificQueryDependency -ApplicationQuery $ApplicationQuery -Architecture $Architecture -Resolved $resolved -Unresolved @() -IncludeInstalled:$IncludeInstalled
+    }
+
+    end {
+        if ($resolved.Count -eq 1) { return @() } # No dependencies
+        return $resolved[0..($resolved.Count - 2)]
+    }
+}
+
+function Resolve-SpecificQueryDependency {
+    [CmdletBinding()]
+    param(
+        [String] $ApplicationQuery,
+        [String] $Architecture,
+        [System.Collections.ArrayList] $Resolved, # [out]
+        [System.Object[]] $Unresolved, # [out]
+        [Switch] $IncludeInstalled
+    )
+
+    process {
+        $resolvedInformation = $null
+        try {
+            $resolvedInformation = Resolve-ManifestInformation -ApplicationQuery $ApplicationQuery
+        } catch {
+            Write-UserMessage -Message "Cannot resolve '$ApplicationQuery'" -Err
+            return
+        }
+        $Unresolved += $ApplicationQuery
+        $bucket = $resolvedInformation.Bucket
+        $appName = $resolvedInformation.ApplicationName
+
+        if (!$resolvedInformation.ManifestObject) {
+            if ($bucket -and ((Get-LocalBucket) -notcontains $bucket)) {
+                Write-UserMessage -Message "Bucket '$bucket' not installed. Add it with 'scoop bucket add $bucket' or 'scoop bucket add $bucket <repo>'." -Warning
+            }
+
+            $mes = "Could not find manifest for '$appName'"
+            if ($bucket) { "$mes from '$bucket' bucket" }
+
+            throw [ScoopException] $mes # TerminatingError thrown
+        }
+
+        $deps = @(Resolve-InstallationDependency -Manifest $resolvedInformation.ManifestObject -Architecture $Architecture -IncludeInstalled:$IncludeInstalled) + `
+        @(Resolve-DependsProperty -Manifest $resolvedInformation.ManifestObject) | Select-Object -Unique
+
+        foreach ($dep in $deps) {
+            if ($Resolved -notcontains $dep) {
+                if ($Unresolved -contains $dep) {
+                    throw [ScoopException] "Circular dependency detected: '$appName' -> '$dep'." # TerminatingError thrown
+                }
+                Resolve-SpecificQueryDependency -ApplicationQuery $dep -Architecture $Architecture -Resolved $Resolved -Unresolved $Unresolved -IncludeInstalled:$IncludeInstalled
+            }
+        }
+        $Resolved.Add($appName) | Out-Null
+        $Unresolved = $Unresolved -ne $appName # Remove from unresolved
+    }
+}
+
+function __alfa {
 }

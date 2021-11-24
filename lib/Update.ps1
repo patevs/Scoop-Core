@@ -284,7 +284,7 @@ function Update-App {
     # Check dependencies
     if (!$Independent) {
         $man = if ($url) { $url } else { $app }
-        $deps = @(deps $man $architecture) | Where-Object { !(installed $_) }
+        $deps = @(Get-ApplicationDependency $man $architecture) | Where-Object { !(installed $_) }
         $deps | ForEach-Object { install_app $_ $architecture $Global $Suggested $SkipCache (!$SkipHashCheck) }
     }
 

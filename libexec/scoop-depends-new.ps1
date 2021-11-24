@@ -30,7 +30,7 @@ $Architecture = Resolve-ArchitectureParameter -Architecture $Options.a, $Options
 
 $res = @()
 foreach ($app in $Applications) {
-    $deps = @(deps $app $Architecture -IncludeInstalled:(!$SkipInstalled))
+    $deps = @(Get-ApplicationDependency $app $Architecture -IncludeInstalled:(!$SkipInstalled))
     if ($deps) { $res += $deps[($deps.Length - 1)..0] }
 }
 
@@ -40,4 +40,3 @@ if ($res.Count -gt 0) { $message = ($res | Select-Object -Unique) -join "`r`n" }
 Write-UserMessage -Message $message -Output
 
 exit $ExitCode
-

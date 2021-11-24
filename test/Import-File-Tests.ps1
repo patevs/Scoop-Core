@@ -52,7 +52,7 @@ Describe 'Style constraints for non-binary project files' {
         }
     }
 
-    It 'files end with a 1 newline' -Skip:$(!$files_exist) {
+    It 'files end with a exactly 1 newline' -Skip:$(!$files_exist) {
         $badFiles = @()
 
         foreach ($file in $files) {
@@ -67,7 +67,7 @@ Describe 'Style constraints for non-binary project files' {
         }
 
         if ($badFiles.Count -gt 0) {
-            throw "The following files do not end with a newline or with multiple empty lines: `r`n`r`n$($badFiles -join "`r`n")"
+            throw "The following files do not end with 1 newline or end with multiple empty lines: `r`n`r`n$($badFiles -join "`r`n")"
         }
     }
 

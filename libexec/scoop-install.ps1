@@ -160,7 +160,7 @@ foreach ($app in $apps) {
     $bucket = $cleanApp = $null
 
     if ($false -eq $independent) {
-        $applicationSpecificDependencies = @(deps $app $architecture)
+        $applicationSpecificDependencies = @(Get-ApplicationDependency $app $architecture)
         $cmp = Compare-Object $applicationSpecificDependencies $failedDependencies -ExcludeDifferent
         # Skip Installation because required depency failed
         if ($cmp -and ($cmp.InputObject.Count -gt 0)) {

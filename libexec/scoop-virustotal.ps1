@@ -33,6 +33,7 @@
     @('getopt', 'Resolve-GetOpt'),
     @('help', 'scoop_help'),
     @('Helpers', 'New-IssuePrompt'),
+    @('Dependencies', 'Resolve-DependsProperty'),
     @('depends', 'script_deps'),
     @('VirusTotal', 'Search-VirusTotal')
 ) | ForEach-Object {

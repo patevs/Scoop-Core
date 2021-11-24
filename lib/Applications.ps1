@@ -3,6 +3,7 @@
     @('Helpers', 'New-IssuePrompt'),
     @('json', 'ConvertToPrettyJson'),
     @('manifest', 'Resolve-ManifestInformation'),
+    @('Dependencies', 'Resolve-DependsProperty'),
     @('depends', 'script_deps'),
     @('Versions', 'Clear-InstalledVersion')
 ) | ForEach-Object {
@@ -192,7 +193,7 @@ function app_status($app, $global) {
     }
 
     $status.missing_deps = @()
-    $deps = @(runtime_deps $manifest) | Where-Object {
+    $deps = @(Resolve-DependsProperty $manifest) | Where-Object {
         $app, $bucket, $null = parse_app $_
         return !(installed $app)
     }

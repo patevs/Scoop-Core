@@ -12,6 +12,7 @@
     @('Helpers', 'New-IssuePrompt'),
     @('Applications', 'Get-InstalledApplicationInformation'),
     @('buckets', 'Get-KnownBucket'),
+    @('Dependencies', 'Resolve-DependsProperty'),
     @('depends', 'script_deps'),
     @('install', 'install_app'),
     @('manifest', 'Resolve-ManifestInformation'),

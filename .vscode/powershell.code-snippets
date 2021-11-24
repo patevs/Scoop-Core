@@ -23,6 +23,7 @@
             "    @('Cache', 'Show-CachedFileList'),",
             "    @('commands', 'Invoke-ScoopCommand'),",
             "    @('decompress', 'Expand-7zipArchive'),",
+            "    @('Dependencies', 'Resolve-DependsProperty'),",
             "    @('depends', 'script_deps'),",
             "    @('description', 'first_para'),",
             "    @('Diagnostic', 'Test-DiagMainBucketAdded'),",

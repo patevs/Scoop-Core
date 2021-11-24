@@ -10,6 +10,7 @@
     @('getopt', 'Resolve-GetOpt'),
     @('help', 'scoop_help'),
     @('Helpers', 'New-IssuePrompt'),
+    @('Dependencies', 'Resolve-DependsProperty'),
     @('depends', 'script_deps')
 ) | ForEach-Object {
     if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {

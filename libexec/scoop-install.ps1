@@ -26,6 +26,7 @@
     @('Helpers', 'New-IssuePrompt'),
     @('buckets', 'Get-KnownBucket'),
     @('decompress', 'Expand-7zipArchive'),
+    @('Dependencies', 'Resolve-DependsProperty'),
     @('depends', 'script_deps'),
     @('install', 'install_app'),
     @('manifest', 'Resolve-ManifestInformation'),

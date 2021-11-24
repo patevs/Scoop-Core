@@ -2,6 +2,24 @@
 
 ## [0.6.5](https://github.com/Ash258/Scoop-Core/milestone/5)
 
+- Refactor dependencies handling
+    - `scoop-depends`: Add `s`, `--skip-installed` parameter
+        - By default only dependencies, which are not installed are shown
+        - Use this parameter to include installed dependencies in list
+    - Support YML manifests
+    - `depends` property now can consist of following:
+
+        ```yml
+        depends:
+        - yarn # Simple lookup from local buckets (supported before)
+        - Base/yarn # Simple lookup from specific local bucket (supported before)
+        - yarn@1 # Lookup from local buckets using specific version
+        - Base/yarn@1 # Lookup from specific local bucket using specific version
+        - https://raw.githubusercontent.com/User/Repo/main/bucket/alfa.yml  # Any URL, which is valid manifest
+        - https://raw.githubusercontent.com/User/Repo/main/bucket/alfabeta.json  # Any URL, which is valid manifest
+        - E:/Install/Shovel/customManifest.yml # Even local manifest support. Use with caution in controlled environment!
+        ```
+
 - Respect `NO_JUNCTIONS` config when resolving helper utilities
     - Fallback to executable from PATH when the utility is not installed via scoop.
 

@@ -172,6 +172,7 @@ local scoopParser = parser({
     }),
     'depends' .. parser({getLocallyAvailableApplicationsByScoop},
         '-a' .. architectureParser, '--arch' .. architectureParser,
+        '-s', '--skip-installed',
         '-h', '--help'
     ),
     'download' .. parser({getLocallyAvailableApplicationsByScoop},

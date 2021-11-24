@@ -108,4 +108,5 @@ function Resolve-InstallationDependency {
     end { return $dependencies | Select-Object -Unique }
 }
 
+function ___alfa {
 }

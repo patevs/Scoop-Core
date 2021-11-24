@@ -223,7 +223,7 @@ Describe 'Manifests operations' -Tag 'Scoop' {
                 $result.ManifestObject.checkver | Should -Be 'github'
                 $result = $null
 
-                { Resolve-ManifestInformation 'nonexistent/cosi' } | Should -Throw '''nonexistent'' cannot be found'
+                { Resolve-ManifestInformation 'nonexistent/cosi' } | Should -Throw '''nonexistent'' bucket cannot be found'
                 { Resolve-ManifestInformation 'main/tryharder' } | Should -Throw 'No manifest found for ''main/tryharder'''
             }
 

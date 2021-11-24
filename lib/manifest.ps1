@@ -297,7 +297,7 @@ function Get-ManifestFromLookup {
         $found = @()
         $buckets = Get-LocalBucket
 
-        if ($requestedBucket -and ($requestedBucket -notin $buckets)) { throw [ScoopException] "'$requestedBucket' cannot be found" }
+        if ($requestedBucket -and ($requestedBucket -notin $buckets)) { throw [ScoopException] "'$requestedBucket' bucket cannot be found" }
 
         foreach ($b in $buckets) {
             $really = manifest_path $requestedName $b

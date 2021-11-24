@@ -56,7 +56,7 @@ $checkverPath = Join-Path $PSScriptRoot 'checkver.ps1'
 }
 
 if ($Help -or (!$Push -and !$Request) -or ($Request -and !$Upstream)) {
-    Write-UserMessage -Messsage @'
+    Write-UserMessage -Message @'
 Usage: auto-pr.ps1 [OPTION]
 
 Mandatory options:

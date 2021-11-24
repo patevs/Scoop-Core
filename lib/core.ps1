@@ -247,9 +247,10 @@ function Test-ScoopDebugEnabled {
     [OutputType([bool])]
     param()
 
-    $configDebug = (get_config 'debug' $false) -eq [bool]::TrueString
+    $configDebug = get_config 'debug' $false
+    $configDebug = ($configDebug -eq $true) -or ($configDebug -eq [bool]::TrueString) -or ($configDebug -eq '1')
     $envDebug = $env:SCOOP_DEBUG
-    $envDebug = ($envDebug -eq [bool]::TrueString) -or ($envDebug -eq 1)
+    $envDebug = ($envDebug -eq [bool]::TrueString) -or ($envDebug -eq '1')
 
     return $configDebug -or $envDebug
 }

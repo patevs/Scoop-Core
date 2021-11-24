@@ -4,8 +4,8 @@
 
 - Refactor dependencies handling
     - `scoop-depends`: Add `s`, `--skip-installed` parameter
-        - By default only dependencies, which are not installed are shown
-        - Use this parameter to include installed dependencies in list
+        - By default all dependencies are shown (including installed)
+        - Use this parameter to not include already installed dependencies in list
     - Support YML manifests
     - `depends` property now can consist of following:
 

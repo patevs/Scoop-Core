@@ -352,10 +352,11 @@ function Get-ManifestFromLookup {
         }
 
         return @{
-            'Name'     = $name
-            'Bucket'   = $manifestBucket
-            'Manifest' = $manifest
-            'Path'     = (Get-Item -LiteralPath $manifestPath)
+            'Name'             = $name
+            'Bucket'           = $manifestBucket
+            'RequestedVersion' = $requestedVersion
+            'Manifest'         = $manifest
+            'Path'             = (Get-Item -LiteralPath $manifestPath)
         }
     }
 }
@@ -385,7 +386,7 @@ function Resolve-ManifestInformation {
     param([Parameter(Mandatory, ValueFromPipeline)] [String] $ApplicationQuery)
 
     process {
-        $manifest = $applicationName = $applicationVersion = $bucket = $localPath = $url = $calcBucket = $calcURL = $null
+        $manifest = $applicationName = $applicationVersion = $requestedVersion = $bucket = $localPath = $url = $calcBucket = $calcURL = $null
 
         if (Test-Path -LiteralPath $ApplicationQuery) {
             $res = Get-LocalManifest -Query $ApplicationQuery
@@ -403,6 +404,7 @@ function Resolve-ManifestInformation {
         } elseif ($ApplicationQuery -match $_lookupRegex) {
             $res = Get-ManifestFromLookup -Query $ApplicationQuery
             $applicationName = $res.Name
+            $requestedVersion = $res.RequestedVersion
             $applicationVersion = $res.Manifest.version
             $manifest = $res.Manifest
             $localPath = $res.Path
@@ -421,6 +423,7 @@ function Resolve-ManifestInformation {
 
         return [Ordered] @{
             'ApplicationName'  = $applicationName
+            'RequestedVersion' = $requestedVersion
             'Version'          = $applicationVersion
             'Bucket'           = $bucket
             'ManifestObject'   = $manifest

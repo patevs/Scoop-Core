@@ -20,6 +20,7 @@
 }
 
 $ExitCode = 0
+$Problems = 0
 $Options, $Applications, $_err = Resolve-GetOpt $args 'a:s' 'arch=', 'skip-installed'
 $SkipInstalled = $Options.s -or $Options.'skip-installed'
 
@@ -28,15 +29,24 @@ if (!$Applications) { Stop-ScoopExecution -Message 'Parameter <APP> missing' -Us
 
 $Architecture = Resolve-ArchitectureParameter -Architecture $Options.a, $Options.arch
 
-$res = @()
-foreach ($app in $Applications) {
-    $deps = @(Get-ApplicationDependency $app $Architecture -IncludeInstalled:(!$SkipInstalled))
-    if ($deps) { $res += $deps[($deps.Length - 1)..0] }
+$res = Resolve-MultipleApplicationDependency -Applications $Applications -Architecture $Architecture -IncludeInstalled:(!$SkipInstalled)
+if ($res.failed.Count -gt 0) {
+    $Problems = $res.failed.Count
 }
+$new = $res.applications | Where-Object -Property 'Dependency' -EQ -Value $true
 
 $message = 'No dependencies required'
-if ($res.Count -gt 0) { $message = ($res | Select-Object -Unique) -join "`r`n" }
+if ($new.Count -gt 0) {
+    $message = @()
+    foreach ($r in $new) {
+        $message += if ($r.Url) { $r.Url } else { $r.ApplicationName }
+    }
+    $message = $message -join "`r`n"
+}
 
 Write-UserMessage -Message $message -Output
+if ($Problems -gt 0) {
+    $ExitCode = 10 + $Problems
+}
 
 exit $ExitCode

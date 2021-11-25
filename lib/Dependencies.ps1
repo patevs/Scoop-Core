@@ -110,19 +110,30 @@ function Resolve-InstallationDependency {
 
 function Get-ApplicationDependency {
     [CmdletBinding()]
+    [OutputType([System.Collections.Hashtable])]
     param([String] $ApplicationQuery, [String] $Architecture, [Switch] $IncludeInstalled)
 
     begin {
         $resolved = New-Object System.Collections.ArrayList
+        $unresolved = New-Object System.Collections.ArrayList
     }
 
     process {
-        Resolve-SpecificQueryDependency -ApplicationQuery $ApplicationQuery -Architecture $Architecture -Resolved $resolved -Unresolved @() -IncludeInstalled:$IncludeInstalled
+        Resolve-SpecificQueryDependency -ApplicationQuery $ApplicationQuery -Architecture $Architecture -Resolved $resolved -Unresolved $unresolved -IncludeInstalled:$IncludeInstalled
     }
 
     end {
-        if ($resolved.Count -eq 1) { return @() } # No dependencies
-        return $resolved[0..($resolved.Count - 2)]
+        if ($resolved.Count -eq 1) {
+            return @{
+                'resolved'   = New-Object System.Collections.ArrayList
+                'unresolved' = New-Object System.Collections.ArrayList
+            }
+        } # No dependencies
+
+        return @{
+            'resolved'   = $resolved[0..($resolved.Count - 2)]
+            'unresolved' = $unresolved
+        }
     }
 }
 
@@ -131,49 +142,82 @@ function Resolve-SpecificQueryDependency {
     param(
         [String] $ApplicationQuery,
         [String] $Architecture,
-        [System.Collections.ArrayList] $Resolved, # [out]
-        [System.Object[]] $Unresolved, # [out]
+        [System.Collections.ArrayList] $Resolved, # [out] ArrayList of Resolve-ManifestInformation objects
+        [System.Collections.Arraylist] $Unresolved, # [out] ArrayList of strings
         [Switch] $IncludeInstalled
     )
 
     process {
         $resolvedInformation = $null
+        $Unresolved.Add($ApplicationQuery)
         try {
             $resolvedInformation = Resolve-ManifestInformation -ApplicationQuery $ApplicationQuery
         } catch {
-            Write-UserMessage -Message "Cannot resolve '$ApplicationQuery'" -Err
+            # Write-UserMessage -Message "Cannot resolve dependency '$ApplicationQuery' ($($_.Exception.Message))" -Err
             return
         }
-        $Unresolved += $ApplicationQuery
-        $bucket = $resolvedInformation.Bucket
-        $appName = $resolvedInformation.ApplicationName
 
-        if (!$resolvedInformation.ManifestObject) {
-            if ($bucket -and ((Get-LocalBucket) -notcontains $bucket)) {
-                Write-UserMessage -Message "Bucket '$bucket' not installed. Add it with 'scoop bucket add $bucket' or 'scoop bucket add $bucket <repo>'." -Warning
-            }
-
-            $mes = "Could not find manifest for '$appName'"
-            if ($bucket) { "$mes from '$bucket' bucket" }
-
-            throw [ScoopException] $mes # TerminatingError thrown
-        }
-
+        # Just array of strings to be resolved
         $deps = @(Resolve-InstallationDependency -Manifest $resolvedInformation.ManifestObject -Architecture $Architecture -IncludeInstalled:$IncludeInstalled) + `
         @(Resolve-DependsProperty -Manifest $resolvedInformation.ManifestObject) | Select-Object -Unique
 
         foreach ($dep in $deps) {
-            if ($Resolved -notcontains $dep) {
+            if ($Resolved.ApplicationName -notcontains $dep) {
                 if ($Unresolved -contains $dep) {
-                    throw [ScoopException] "Circular dependency detected: '$appName' -> '$dep'." # TerminatingError thrown
+                    throw [ScoopException] "Circular dependency detected: '$($resolvedInformation.ApplicationName)' -> '$dep'." # TerminatingError thrown
                 }
                 Resolve-SpecificQueryDependency -ApplicationQuery $dep -Architecture $Architecture -Resolved $Resolved -Unresolved $Unresolved -IncludeInstalled:$IncludeInstalled
             }
         }
-        $Resolved.Add($appName) | Out-Null
-        $Unresolved = $Unresolved -ne $appName # Remove from unresolved
+        $Resolved.Add($resolvedInformation) | Out-Null
+        $Unresolved.Remove($ApplicationQuery) # Consider self as resolved
     }
 }
 
-function __alfa {
+# Create installation objects for all the dependencies and applications
+function Resolve-MultipleApplicationDependency {
+    [CmdletBinding()]
+    [OutputType([System.Collections.HashTable])]
+    param([System.Object[]] $Applications, [String] $Architecture, [Switch] $IncludeInstalled)
+
+    begin {
+        $failed = @()
+        $result = @()
+    }
+
+    process {
+        foreach ($app in $Applications) {
+            $deps = @()
+            try {
+                $deps = Get-ApplicationDependency $app $Architecture -IncludeInstalled:$IncludeInstalled
+                if ($deps.Unresolved.Count -gt 0) {
+                    $failed += $deps.Unresolved
+                    throw [ScoopException] "Cannot process dependencies for '$($app)': ($($deps.Unresolved -join ', '))" # TerminatingError thrown
+                }
+            } catch {
+                Write-UserMessage -Message $_.Exception.Message -Err
+                continue
+            }
+
+            foreach ($dep in $deps.resolved) {
+                if ($result.ApplicationName -notcontains $dep.ApplicationName) {
+                    $dep | Add-Member -MemberType 'NoteProperty' -Name 'Dependency' -Value $true
+                    $result += $dep
+                }
+            }
+
+            if ($result.AppliactionName -notcontains $app) {
+                $r = Resolve-ManifestInformation -ApplicationQuery $app
+                $r | Add-Member -MemberType 'NoteProperty' -Name 'Dependency' -Value $false
+                $result += $r
+            }
+        }
+    }
+
+    end {
+        return @{
+            'failed'       = $failed
+            'applications' = $result
+        }
+    }
 }

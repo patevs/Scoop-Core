@@ -2,6 +2,11 @@
 
 ## [0.6.5](https://github.com/Ash258/Scoop-Core/milestone/5)
 
+🎉🎉 YAML typed manifest instllation support 🎉🎉
+
+- Adopt new resolve function for parameter passing
+    - **scoop-install**
+    - **scoop-depends**
 - Refactor dependencies handling
     - `scoop-depends`: Add `s`, `--skip-installed` parameter
         - By default all dependencies are shown (including installed)

@@ -34,7 +34,7 @@ $res = Resolve-MultipleApplicationDependency -Applications $Applications -Archit
 if ($res.Failed.Count -gt 0) {
     $Problems = $res.Failed.Count
 }
-$new = $res.Applications | Where-Object -Property 'Dependency' -EQ -Value $true
+$new = $res.Applications | Where-Object -Property 'Dependency' -NE -Value $false
 
 $message = 'No dependencies required'
 if ($new.Count -gt 0) {

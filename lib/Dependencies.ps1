@@ -199,17 +199,18 @@ function Resolve-MultipleApplicationDependency {
                 continue
             }
 
+            $r = Resolve-ManifestInformation -ApplicationQuery $app
+
             foreach ($dep in $deps.Resolved) {
                 if ($result.ApplicationName -notcontains $dep.ApplicationName) {
-                    $dep | Add-Member -MemberType 'NoteProperty' -Name 'Dependency' -Value $true
+                    $dep | Add-Member -MemberType 'NoteProperty' -Name 'Dependency' -Value $r.ApplicationName
                     $result += $dep
                 } else {
                     Write-UserMessage -Message "[$app] Dependency entry for $($dep.ApplicationName) already exists as: '$(($result | Where-Object -Property 'ApplicationName' -EQ -Value $dep.ApplicationName).Print))'" -Info
                 }
             }
 
-            if ($result.AppliactionName -notcontains $app) {
-                $r = Resolve-ManifestInformation -ApplicationQuery $app
+            if ($result.AppliactionName -notcontains $r.ApplicationName) {
                 $r | Add-Member -MemberType 'NoteProperty' -Name 'Dependency' -Value $false
                 $result += $r
             }

@@ -1,5 +1,6 @@
 # Usage: scoop depends [<OPTIONS>] [<APP>]
 # Summary: List dependencies for application(s).
+# Helps: All dependencies will be "resolved"/checked, if they are accessible (in case of remote manifests or different versions).
 #
 # Options:
 #   -h, --help                      Show help for this command.

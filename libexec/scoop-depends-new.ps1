@@ -37,11 +37,7 @@ $new = $res.applications | Where-Object -Property 'Dependency' -EQ -Value $true
 
 $message = 'No dependencies required'
 if ($new.Count -gt 0) {
-    $message = @()
-    foreach ($r in $new) {
-        $message += if ($r.Url) { $r.Url } else { $r.ApplicationName }
-    }
-    $message = $message -join "`r`n"
+    $message = $new.Print -join "`r`n"
 }
 
 Write-UserMessage -Message $message -Output

@@ -203,6 +203,8 @@ function Resolve-MultipleApplicationDependency {
                 if ($result.ApplicationName -notcontains $dep.ApplicationName) {
                     $dep | Add-Member -MemberType 'NoteProperty' -Name 'Dependency' -Value $true
                     $result += $dep
+                } else {
+                    Write-UserMessage -Message "[$app] Dependency entry for $($dep.ApplicationName) already exists as: '$(($result | Where-Object -Property 'ApplicationName' -EQ -Value $dep.ApplicationName).Print))'" -Info
                 }
             }
 

@@ -205,6 +205,7 @@ function Get-LocalManifest {
             'Name'     = $applicationName
             'Manifest' = $manifest
             'Path'     = $localPath
+            'Print'    = $Query
         }
     }
 }
@@ -269,6 +270,7 @@ function Get-RemoteManifest {
             'Name'     = $name
             'Manifest' = $manifest
             'Path'     = Get-Item -LiteralPath $manifestFile
+            'Print'    = $URL
         }
     }
 }
@@ -318,9 +320,12 @@ function Get-ManifestFromLookup {
 
         $manifestBucket = $valid.Bucket
         $manifestPath = $valid.Path
+        $printableRepresentation = ''
 
         # Select versioned manifest or generate it
         if ($requestedVersion) {
+            $printableRepresentation = "@$requestedVersion"
+
             try {
                 $path = manifest_path -app $requestedName -bucket $manifestBucket -version $requestedVersion
                 if ($null -eq $path) { throw 'trigger' }
@@ -355,6 +360,7 @@ function Get-ManifestFromLookup {
             'Name'             = $name
             'Bucket'           = $manifestBucket
             'RequestedVersion' = $requestedVersion
+            'Print'            = "$manifestBucket/$name$printableRepresentation"
             'Manifest'         = $manifest
             'Path'             = (Get-Item -LiteralPath $manifestPath)
         }
@@ -386,7 +392,7 @@ function Resolve-ManifestInformation {
     param([Parameter(Mandatory, ValueFromPipeline)] [String] $ApplicationQuery)
 
     process {
-        $manifest = $applicationName = $applicationVersion = $requestedVersion = $bucket = $localPath = $url = $calcBucket = $calcURL = $null
+        $manifest = $applicationName = $applicationVersion = $requestedVersion = $bucket = $localPath = $url = $print = $calcBucket = $calcURL = $null
 
         if (Test-Path -LiteralPath $ApplicationQuery) {
             $res = Get-LocalManifest -Query $ApplicationQuery
@@ -394,6 +400,7 @@ function Resolve-ManifestInformation {
             $applicationVersion = $res.Manifest.version
             $manifest = $res.Manifest
             $localPath = $res.Path
+            $print = $res.Print
         } elseif ($ApplicationQuery -match '^https?://') {
             $res = Get-RemoteManifest -URL $ApplicationQuery
             $applicationName = $res.Name
@@ -401,6 +408,7 @@ function Resolve-ManifestInformation {
             $manifest = $res.Manifest
             $localPath = $res.Path
             $url = $ApplicationQuery
+            $print = $res.Print
         } elseif ($ApplicationQuery -match $_lookupRegex) {
             $res = Get-ManifestFromLookup -Query $ApplicationQuery
             $applicationName = $res.Name
@@ -409,6 +417,7 @@ function Resolve-ManifestInformation {
             $manifest = $res.Manifest
             $localPath = $res.Path
             $bucket = $res.Bucket
+            $print = $res.Print
         } else {
             throw 'Not supported way how to provide manifest'
         }
@@ -428,6 +437,7 @@ function Resolve-ManifestInformation {
             'Bucket'           = $bucket
             'ManifestObject'   = $manifest
             'Url'              = $url
+            'Print'            = $print
             'LocalPath'        = $localPath
             'CalculatedUrl'    = $calcURL
             'CalculatedBucket' = $calcBucket

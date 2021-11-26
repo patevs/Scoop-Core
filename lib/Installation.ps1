@@ -88,6 +88,7 @@ function Install-Application {
 
         # Persist data
         persist_data $manifest $original_dir $persist_dir
+        #TODOOOO: Eliminate
         persist_permission $manifest $Global
 
         Invoke-ManifestScript -Manifest $manifest -ScriptName 'post_install' -Architecture $Architecture
@@ -120,7 +121,7 @@ function Set-ScoopManifestHelperFile {
         $p = $ResolvedObject.LocalPath
         $name = 'scoop-manifest'
 
-        if ($false) {
+        if ($p -and (Test-Path -LiteralPath $p)) {
             $name = "$name$($p.Extension)"
             $t = Join-Path $Directory $name
             Copy-Item -LiteralPath $ResolvedObject.LocalPath -Destination $t

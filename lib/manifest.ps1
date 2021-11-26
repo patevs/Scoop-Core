@@ -551,7 +551,7 @@ function installed_manifest($app, $version, $global) {
     #endregion Migration from non-generic file name
 
     # Different extension types
-    if (!(Test-Path $manifestPath)) {
+    if (!(Test-Path -LiteralPath $manifestPath)) {
         $installedManifests = Get-ChildItem -LiteralPath $d -Include 'scoop-manifest.*' -ErrorAction 'SilentlyContinue'
         if ($installedManifests.Count -gt 0) {
             $manifestPath = $installedManifests[0].FullName

@@ -125,14 +125,14 @@ function Get-ApplicationDependency {
     end {
         if ($resolved.Count -eq 1) {
             return @{
-                'resolved'   = New-Object System.Collections.ArrayList
-                'unresolved' = New-Object System.Collections.ArrayList
+                'Resolved'   = New-Object System.Collections.ArrayList
+                'Unresolved' = New-Object System.Collections.ArrayList
             }
         } # No dependencies
 
         return @{
-            'resolved'   = $resolved[0..($resolved.Count - 2)]
-            'unresolved' = $unresolved
+            'Resolved'   = $resolved[0..($resolved.Count - 2)]
+            'Unresolved' = $unresolved
         }
     }
 }
@@ -199,7 +199,7 @@ function Resolve-MultipleApplicationDependency {
                 continue
             }
 
-            foreach ($dep in $deps.resolved) {
+            foreach ($dep in $deps.Resolved) {
                 if ($result.ApplicationName -notcontains $dep.ApplicationName) {
                     $dep | Add-Member -MemberType 'NoteProperty' -Name 'Dependency' -Value $true
                     $result += $dep
@@ -218,8 +218,8 @@ function Resolve-MultipleApplicationDependency {
 
     end {
         return @{
-            'failed'       = $failed
-            'applications' = $result
+            'Failed'       = $failed
+            'Applications' = $result
         }
     }
 }

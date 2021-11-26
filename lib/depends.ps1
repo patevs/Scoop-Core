@@ -58,7 +58,7 @@ function dep_resolve($app, $arch, $resolved, $unresolved) {
         throw [ScoopException] "Could not find manifest for '$app'$(if(!$bucket) { '.' } else { " from '$bucket' bucket." })" # TerminatingError thrown
     }
 
-    $deps = @(install_deps $manifest $arch) + @(Resolve-DependsProperty $manifest) | Select-Object -Unique
+    $deps = @(install_deps $manifest $arch) + @(runtime_deps $manifest) | Select-Object -Unique
 
     foreach ($dep in $deps) {
         if ($resolved -notcontains $dep) {

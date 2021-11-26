@@ -251,3 +251,43 @@ function Confirm-InstallationStatus {
 
     return , $installed
 }
+
+function Test-ResolvedObjectIsInstalled {
+    [CmdletBinding()]
+    [OutputType([System.Boolean])]
+    param($ResolvedObject, [Switch] $Global)
+
+    process {
+        $app = $ResolvedObject.ApplicationName
+        $gf = if ($Global) { ' --global' } else { '' }
+
+        if (installed $app $Global) {
+            $installedVersion = Select-CurrentVersion -AppName $app -Global:$Global
+
+            # Test if explicitly provided version is installed
+            if ($ResolvedObject.RequestedVersion) {
+                $all = @(Get-InstalledVersion -AppName $app -Global:$Global)
+
+                return $all -contains $ResolvedObject.RequestedVersion
+            }
+
+            if (!(install_info $app $installedVersion $Global)) {
+                Write-UserMessage -Err -Message @(
+                    "It looks like a previous installation of '$app' failed."
+                    "Run 'scoop uninstall $app$gf' before retrying the install."
+                )
+
+                return $true
+            }
+
+            Write-UserMessage -Message @(
+                "'$app' ($installedVersion) is already installed.",
+                "Use 'scoop update $app$gf' to install a new version."
+            ) -Warning
+
+            return $true
+        }
+
+        return $false
+    }
+}

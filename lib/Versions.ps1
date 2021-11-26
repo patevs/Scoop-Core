@@ -267,6 +267,15 @@ function Clear-InstalledVersion {
     }
 }
 
+function nightly_version($date = (Get-Date), $quiet = $false) {
+    $date_str = $date.ToString('yyyyMMdd')
+    if (!$quiet) {
+        Write-UserMessage -Message "This is a nightly version. Downloaded files won't be verified." -Warning
+    }
+
+    return "nightly-$date_str"
+}
+
 #region Deprecated
 # This has to stay for mro manifest
 function current_version($app, $global) {

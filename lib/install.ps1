@@ -5,21 +5,13 @@
     @('buckets', 'Get-KnownBucket'),
     @('decompress', 'Expand-7zipArchive'),
     @('manifest', 'Resolve-ManifestInformation'),
+    @('Versions', 'Clear-InstalledVersion'),
     @('ManifestHelpers', 'Test-Persistence')
 ) | ForEach-Object {
     if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {
         Write-Verbose "Import of lib '$($_[0])' initiated from '$PSCommandPath'"
         . (Join-Path $PSScriptRoot "$($_[0]).ps1")
     }
-}
-
-function nightly_version($date, $quiet = $false) {
-    $date_str = $date.ToString('yyyyMMdd')
-    if (!$quiet) {
-        Write-UserMessage -Message "This is a nightly version. Downloaded files won't be verified." -Warning
-    }
-
-    return "nightly-$date_str"
 }
 
 function Deny-ArmInstallation {

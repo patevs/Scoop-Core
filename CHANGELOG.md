@@ -2,7 +2,7 @@
 
 ## [0.6.5](https://github.com/Ash258/Scoop-Core/milestone/5)
 
-🎉🎉 YAML typed manifest instllation support 🎉🎉
+🎉🎉 YAML typed manifest installation support 🎉🎉
 
 - Adopt new resolve function for parameter passing
     - **scoop-install**

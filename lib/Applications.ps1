@@ -215,6 +215,7 @@ function Confirm-InstallationStatus {
         Specifies to check globally installed applications.
     #>
     [CmdletBinding()]
+    [OutputType([System.Object[]])]
     param(
         [Parameter(Mandatory)]
         [String[]] $Apps,
@@ -223,11 +224,10 @@ function Confirm-InstallationStatus {
     $Global | Out-Null # PowerShell/PSScriptAnalyzer#1472
     $installed = @()
 
-    $Apps | Select-Object -Unique | Where-Object -Property 'Name' -NE -Value 'scoop' | ForEach-Object {
-        # TODO: Adopt Resolve-ManifestInformation
-        # Should not be needed to resolve, as it will contain only valid installed applications
-        $app, $null, $null = parse_app $_
-        $buc = (app_status $app $Global).bucket
+    foreach ($app in $Apps | Select-Object -Unique | Where-Object -Property 'Name' -NE -Value 'scoop' | Where-Object { $_ -ne 'scoop' }) {
+        $info = install_info $app (Select-CurrentVersion -AppName $app -Global:$Global) $Global
+        $buc = $info.bucket
+
         if ($Global) {
             if (installed $app $true) {
                 $installed += , @($app, $true, $buc)

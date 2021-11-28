@@ -174,6 +174,7 @@ function Update-Scoop {
     if ($CheckLastUpdate -and ($false -eq (is_scoop_outdated))) {
         return
     }
+
     Write-UserMessage -Message 'Updating Scoop...' -Output
 
     # TODO: CONFIG refactor adoption

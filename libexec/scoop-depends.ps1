@@ -34,7 +34,7 @@ $Architecture = Resolve-ArchitectureParameter -Architecture $Options.a, $Options
 
 $toInstall = Resolve-MultipleApplicationDependency -Applications $Applications -Architecture $Architecture -IncludeInstalled:(!$SkipInstalled)
 $_apps = @($toInstall | Where-Object -Property 'Dependency' -EQ -Value $false)
-$_deps = @($toInstall | Where-Object -Property 'Dependency' -EQ -Value $true)
+$_deps = @($toInstall | Where-Object -Property 'Dependency' -NE -Value $false)
 
 $message = 'No dependencies required'
 if ($_deps.Count -gt 0) {

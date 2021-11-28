@@ -1,6 +1,8 @@
 # Usage: scoop depends [<OPTIONS>] [<APP>]
 # Summary: List dependencies for application(s).
 # Helps: All dependencies will be "resolved"/checked, if they are accessible (in case of remote manifests or different versions).
+# If application was already resolved as an dependency, duplicate will not be added (even when the version is different).
+# `shovel depends 7zip lessmsi@1.9.0` will resolve just to `main/lessmsi` instead of `main/lessmsi main/lessmsi@1.9.0`
 #
 # Options:
 #   -h, --help                      Show help for this command.
@@ -31,16 +33,12 @@ if (!$Applications) { Stop-ScoopExecution -Message 'Parameter <APP> missing' -Us
 $Architecture = Resolve-ArchitectureParameter -Architecture $Options.a, $Options.arch
 
 $toInstall = Resolve-MultipleApplicationDependency -Applications $Applications -Architecture $Architecture -IncludeInstalled:(!$SkipInstalled)
-$_a = @($toInstall | Where-Object -Property 'Dependency' -EQ -Value $false)
-$new = @($toInstall | Where-Object -Property 'Dependency' -EQ -Value $true)
-# TODOOOO: Handle edge case when a provided aplication was already resolved as an dependency
-if ($_a.Count -ne $Applications.Count) {
-    $Problems = $Applications.Count - $_a.Count
-}
+$_apps = @($toInstall | Where-Object -Property 'Dependency' -EQ -Value $false)
+$_deps = @($toInstall | Where-Object -Property 'Dependency' -EQ -Value $true)
 
 $message = 'No dependencies required'
-if ($new.Count -gt 0) {
-    $message = $new.Print -join "`r`n"
+if ($_deps.Count -gt 0) {
+    $message = $_deps.Print -join "`r`n"
 }
 
 Write-UserMessage -Message $message -Output

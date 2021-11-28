@@ -70,6 +70,10 @@ function Uninstall-ScoopApplication {
     $install = install_info $App $version $Global
     $architecture = $install.architecture
 
+    if ($install.dependency_for) {
+        Write-UserMessage -Message "Uninstalling dependency required for installed application '$($install.dependency_for)'. This operation could negatively influence the said application." -Warning
+    }
+
     Invoke-ManifestScript -Manifest $manifest -ScriptName 'pre_uninstall' -Architecture $architecture
     run_uninstaller $manifest $architecture $dir
     Invoke-ManifestScript -Manifest $manifest -ScriptName 'post_uninstall' -Architecture $architecture

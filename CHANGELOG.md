@@ -4,6 +4,10 @@
 
 🎉🎉 YAML typed manifest installation support 🎉🎉
 
+- **scoop-uninstall**: Warn user when he tries to uninstall dependency, which is required
+- **scoop-status**: Detect if applications, which were installed as dependency are still needed
+- **scoop-list**: Show if application was installed as dependency
+    - If it was installed as dependency, the parent application will be shown as `{application}` in blue
 - Adopt new resolve function for parameter passing
     - **scoop-install**
     - **scoop-depends**

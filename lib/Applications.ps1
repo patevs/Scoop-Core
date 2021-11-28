@@ -176,6 +176,7 @@ function app_status($app, $global) {
 
     $install_info = install_info $app $status.version $global
 
+    $status.install_info = $install_info
     $status.failed = (!$install_info -or !$status.version)
     $status.hold = ($install_info.hold -eq $true)
 

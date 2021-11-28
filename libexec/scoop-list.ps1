@@ -89,6 +89,11 @@ $Applications | Sort-Object @SortSplat | Where-Object { !$Query -or ($_.name -ma
     if ($installInfo.architecture -and ($DefaultArchitecture -ne $installInfo.architecture)) {
         Write-Host " {$($installInfo.architecture)}" -ForegroundColor 'DarkRed' -NoNewline
     }
+
+    if ($installInfo.dependency_for) {
+        Write-Host " {$($installInfo.dependency_for)}" -ForegroundColor 'DarkBlue' -NoNewline
+    }
+
     Write-Host ''
 }
 Write-Host ''

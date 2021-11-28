@@ -1,11 +1,12 @@
 # Usage: scoop status [<OPTIONS>]
 # Summary: Show status and check for available updates for all installed applications.
-# Help: Status command will check these factors and report if any of them is not satisfied:
+# Help: Status command will check various factors and report if any of them is not satisfied. Following factors are checked:
 #    Scoop installation is up-to-date.
-#    Installed applications use the latest version.
+#    Every installed application use the latest version.
 #    Remote manifests of installed applications are available.
 #    All applications are successfully installed.
 #    All runtime dependencies are installed.
+#    All installed dependencies are still needed.
 #
 # Options:
 #   -h, --help      Show help for this command.
@@ -35,6 +36,7 @@ $Outdated = @()
 $Removed = @()
 $MissingDependencies = @()
 $Onhold = @()
+$CouldBeRemoved = @()
 $null, $null, $_err = Resolve-GetOpt $args
 
 if ($_err) { Stop-ScoopExecution -Message "scoop status: $_err" -ExitCode 2 }
@@ -60,6 +62,8 @@ if ($UpdateRequired) {
     Write-UserMessage -Message 'Scoop is up to date' -Success
 }
 
+$installedApps = @((installed_apps $true) + (installed_apps $false))
+
 # Local and global applications
 foreach ($global in ($true, $false)) {
     $dir = appsdir $global
@@ -75,6 +79,9 @@ foreach ($global in ($true, $false)) {
         if ($status.outdated) {
             $Outdated += @{ $app = @($status.version, $status.latest_version) }
             if ($status.hold) { $Onhold += @{ $app = @($status.version, $status.latest_version) } }
+        }
+        if (($status.install_info.dependency_for) -and ($installedApps -notcontains $status.install_info.dependency_for)) {
+            $CouldBeRemoved += $app
         }
     }
 }
@@ -117,6 +124,13 @@ if ($MissingDependencies) {
     $MissingDependencies | ForEach-Object {
         $app, $deps = $_
         Write-UserMessage -Message "    '$app' requires '$($deps -join ', ')'"
+    }
+}
+
+if ($CouldBeRemoved) {
+    Write-UserMessage -Message 'These dependencies could be removed:' -Color 'DarkCyan'
+    $CouldBeRemoved | ForEach-Object {
+        Write-UserMessage -Message "    $_"
     }
 }
 

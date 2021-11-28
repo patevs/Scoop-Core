@@ -60,10 +60,8 @@ Update-Scoop -CheckLastUpdate
 $suggested = @{ }
 $failedDependencies = @()
 $failedApplications = @()
-$toInstall = @{
-    'Applications' = @()
-    'Failed'       = @()
-}
+$toInstall = @()
+
 # Properly resolve all dependencies and applications
 if ($Independent) {
     foreach ($a in $Applications) {
@@ -76,34 +74,31 @@ if ($Independent) {
             continue
         }
 
-        $toInstall.Applications += $ar
+        $toInstall += $ar
     }
 } else {
     $toInstall = Resolve-MultipleApplicationDependency -Applications $Applications -Architecture $Architecture
 }
 
-# Filter not installed
 # TODO: Try to rather remove from the array instead of creating new one
+# Filter not installed
 $new = @()
-foreach ($inst in $toInstall.Applications) {
+foreach ($inst in $toInstall) {
     if (Test-ResolvedObjectIsInstalled -ResolvedObject $inst -Global:$Global) {
         continue
     }
     $new += $inst
 }
-$toInstall.Applications = $new
+$toInstall = $new
 
-if ($toInstall.Applications.Count -eq 0) {
-    $ex = 0
-    if ($toInstall.Failed.Count -gt 0) { $ex += 10 + $toInstall.Failed.Count }
-
-    Stop-ScoopExecution -Message 'Nothing to install' -ExitCode $ex -SkipSeverity
+if ($toInstall.Count -eq 0) {
+    Stop-ScoopExecution -Message 'Nothing to install' -ExitCode $ExitCode -SkipSeverity
 }
 
-foreach ($app in $toInstall.Applications) {
+foreach ($app in $toInstall) {
     # Skip installation of application if any of the dependency failed
     if (($false -eq $Independent)) {
-        $applicationSpecificDependencies = ($toInstall.Applications | Where-Object -Property 'Dependency' -EQ $app.ApplicationName).Print
+        $applicationSpecificDependencies = ($toInstall | Where-Object -Property 'Dependency' -EQ $app.ApplicationName).Print
         if ($null -eq $applicationSpecificDependencies) {
             $applicationSpecificDependencies = @()
         }
@@ -112,7 +107,6 @@ foreach ($app in $toInstall.Applications) {
 
         # Skip Installation because required depency failed
         if ($cmp -and ($cmp.InputObject.Count -gt 0)) {
-            Write-Host 'ano'
             $f = $cmp.InputObject -join ', '
             Write-UserMessage -Message "'$($app.Print)' cannot be installed due to failed dependency installation ($f)" -Err
             ++$Problems

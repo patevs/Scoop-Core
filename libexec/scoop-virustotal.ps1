@@ -33,7 +33,6 @@
     @('help', 'scoop_help'),
     @('Helpers', 'New-IssuePrompt'),
     @('Dependencies', 'Resolve-DependsProperty'),
-    @('depends', 'script_deps'),
     @('VirusTotal', 'Search-VirusTotal')
 ) | ForEach-Object {
     if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {
@@ -54,6 +53,10 @@ if (!$VT_API_KEY) { Stop-ScoopExecution -Message 'Virustotal API Key is required
 $DoScan = $Options.scan -or $Options.s
 $Independent = $Options.independent -or $Options.i
 $Architecture = Resolve-ArchitectureParameter -Architecture $Options.a, $Options.arch
+$toInstall = @{
+    'Failed'   = @()
+    'Resolved' = @()
+}
 
 # Buildup all installed applications
 if ($Applications -eq '*') {
@@ -61,16 +64,31 @@ if ($Applications -eq '*') {
     $Applications += installed_apps $true
 }
 
-if (!$Independent) { $Applications = install_order $Applications $Architecture }
+# Properly resolve all dependencies and applications
+if ($Independent) {
+    foreach ($a in $Applications) {
+        $ar = $null
+        try {
+            $ar = Resolve-ManifestInformation -ApplicationQuery $a
+        } catch {
+            ++$Problems
+            Write-UserMessage -Message "$($_.Exception.Message)" -Err
+            continue
+        }
 
-foreach ($app in $Applications) {
-    # TODO: Adopt Resolve-ManifestInformation
-    # TOOD: Fix URL/local manifest installations
-    # Should it take installed manifest or remote manifest?
-    $manifest, $bucket = find_manifest $app
+        $toInstall.Resolved += $ar
+    }
+} else {
+    $toInstall = Resolve-MultipleApplicationDependency -Applications $Applications -Architecture $Architecture -IncludeInstalled
+}
+
+foreach ($app in $toInstall.Resolved) {
+    $appName = $app.ApplicationName
+    $manifest = $app.ManifestObject
+
     if (!$manifest) {
         $ExitCode = $ExitCode -bor $VT_ERR.NoInfo
-        Write-UserMessage -Message "${app}: manifest not found" -Err
+        Write-UserMessage -Message "${appName}: manifest not found" -Err
         continue
     }
 
@@ -78,25 +96,25 @@ foreach ($app in $Applications) {
         $hash = hash_for_url $manifest $url $Architecture
 
         if (!$hash) {
-            Write-UserMessage -Message "${app}: Cannot find hash for $url" -Warning
+            Write-UserMessage -Message "${appName}: Cannot find hash for '$url'" -Warning
+            # TODO: Adopt if ($Download) {}
             continue
-            # TODO: Adopt $Options.download
         }
 
         try {
-            $ExitCode = $ExitCode -bor (Search-VirusTotal $hash $app)
+            $ExitCode = $ExitCode -bor (Search-VirusTotal $hash $appName)
         } catch {
             $ExitCode = $ExitCode -bor $VT_ERR.Exception
 
             if ($_.Exception.Message -like '*(404)*') {
-                Submit-ToVirusTotal -Url $url -App $app -DoScan:$DoScan
+                Submit-ToVirusTotal -Url $url -App $appName -DoScan:$DoScan
             } else {
                 if ($_.Exception.Message -match '\(204|429\)') {
-                    Write-UserMessage -Message "${app}: VirusTotal request failed: $($_.Exception.Message)"
+                    Write-UserMessage -Message "${appName}: VirusTotal request failed: $($_.Exception.Message)"
                     $ExitCode = 3
                     continue
                 }
-                Write-UserMessage -Message "${app}: VirusTotal request failed: $($_.Exception.Message)"
+                Write-UserMessage -Message "${appName}: VirusTotal request failed: $($_.Exception.Message)"
             }
         }
     }

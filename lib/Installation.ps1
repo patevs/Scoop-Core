@@ -34,7 +34,9 @@ function Install-ScoopApplication {
         Deny-ArmInstallation -Manifest $manifest -Architecture $architecture
 
         $buc = if ($ResolvedObject.Bucket) { " [$($ResolvedObject.Bucket)]" } else { '' }
-        Write-UserMessage -Message "Installing '$appName' ($version) [$Architecture]$buc"
+        $dep = if ($ResolvedObject.Dependency -ne $false) { " {Dependency for $($ResolvedObject.Dependency)}" } else { '' }
+
+        Write-UserMessage -Message "Installing '$appName' ($version) [$Architecture]$buc$dep"
 
         # Show license
         $license = $manifest.license

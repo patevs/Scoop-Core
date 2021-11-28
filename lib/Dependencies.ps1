@@ -141,21 +141,26 @@ function Get-ApplicationDependency {
 function Resolve-SpecificQueryDependency {
     [CmdletBinding()]
     param(
+        [Parameter(Mandatory)]
         [String] $ApplicationQuery,
         [String] $Architecture,
         [System.Collections.ArrayList] $Resolved, # [out] ArrayList of Resolve-ManifestInformation objects
         [System.Collections.Arraylist] $Unresolved, # [out] ArrayList of strings
-        [Switch] $IncludeInstalled
+        [Switch] $IncludeInstalled,
+        $Manifest
     )
 
-    #[out]$resolved
-    #[out]$unresolved
-
     $information = $null
-    try {
-        $information = Resolve-ManifestInformation -ApplicationQuery $ApplicationQuery
-    } catch {
-        throw [ScoopException] "'$ApplicationQuery' -> $($_.Exception.Message)"
+    if ($Manifest) {
+        $information = @{}
+        $information.ApplicationName = $ApplicationQuery
+        $information.ManifestObject = $Manifest
+    } else {
+        try {
+            $information = Resolve-ManifestInformation -ApplicationQuery $ApplicationQuery
+        } catch {
+            throw [ScoopException] "'$ApplicationQuery' -> $($_.Exception.Message)"
+        }
     }
 
     $deps = @(Resolve-InstallationDependency -Manifest $information.ManifestObject -Architecture $Architecture -IncludeInstalled:$IncludeInstalled) + `
@@ -168,6 +173,8 @@ function Resolve-SpecificQueryDependency {
             }
 
             Resolve-SpecificQueryDependency -ApplicationQuery $dep -Architecture $Architecture -Resolved $Resolved -Unresolved $Unresolved -IncludeInstalled:$IncludeInstalled
+        } else {
+            Write-UserMessage -Message "[$ApplicationQuery] There is already registered dependency '$(($Resolved | Where-Object -Property 'ApplicationName' -EQ -Value $dep).Print)' for '$dep'" -Info
         }
     }
     $Resolved.Add($information) | Out-Null
@@ -201,6 +208,8 @@ function Resolve-MultipleApplicationDependency {
                     if ($IncludeInstalled -or !(installed $dep.ApplicationName)) {
                         $toInstall += $dep
                     }
+                } else {
+                    Write-UserMessage -Message "[$app] Dependency entry for $($dep.ApplicationName) already exists as: '$(($toInstall | Where-Object -Property 'ApplicationName' -EQ -Value $dep.ApplicationName).Print))'" -Info
                 }
             }
 
@@ -212,6 +221,8 @@ function Resolve-MultipleApplicationDependency {
                 if ($IncludeInstalled -or !(installed $s.ApplicationName)) {
                     $toInstall += $s
                 }
+            } else {
+                Write-UserMessage -Message "'$app' was already resolved before as: '$(($toInstall | Where-Object -Property 'ApplicationName' -EQ -Value $s.ApplicationName).Print)'" -Info
             }
         }
 

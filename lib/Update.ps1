@@ -289,6 +289,7 @@ function Update-App {
     # Check dependencies
     if (!$Independent) {
         $man = if ($url) { $url } else { $app }
+        # TODO: Adopt the new dependencies refactor
         $deps = @(deps $man $architecture) | Where-Object { !(installed $_) }
         $deps | ForEach-Object { install_app $_ $architecture $Global $Suggested $SkipCache (!$SkipHashCheck) }
     }

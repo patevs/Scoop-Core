@@ -4,7 +4,6 @@
     @('json', 'ConvertToPrettyJson'),
     @('manifest', 'Resolve-ManifestInformation'),
     @('Dependencies', 'Resolve-DependsProperty'),
-    @('depends', 'script_deps'),
     @('Versions', 'Clear-InstalledVersion')
 ) | ForEach-Object {
     if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {
@@ -193,8 +192,8 @@ function app_status($app, $global) {
     }
 
     $status.missing_deps = @()
-    # TODO: Adopt Resolve-ManifestInformation
-    $deps = @(Resolve-DependsProperty $manifest) | Where-Object {
+    # TODO: Adopt Resolve-ManifestInformation not needed to be fully compatible, consider some simple parsing
+    $deps = @(Resolve-DependsProperty -Manifest $manifest) | Where-Object {
         $app, $bucket, $null = parse_app $_
         return !(installed $app)
     }

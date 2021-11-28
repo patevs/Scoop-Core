@@ -1,17 +1,20 @@
-# Usage: scoop depends [<OPTIONS>] <APP>
-# Summary: List dependencies for an application.
+# Usage: scoop depends [<OPTIONS>] <APP>...
+# Summary: List dependencies for application(s).
+# Help: All dependencies will be "resolved"/checked, if they are accessible (in case of remote manifests or different versions).
+# If application was already resolved as a dependency, duplicate will not be added (even when the versions are different).
+# `shovel depends 7zip lessmsi@1.9.0` will resolve just to `main/lessmsi` instead of `main/lessmsi main/lessmsi@1.9.0`
 #
 # Options:
 #   -h, --help                      Show help for this command.
 #   -a, --arch <32bit|64bit|arm64>  Use the specified architecture, if the application's manifest supports it.
+#   -s, --skip-installed          Do not list dependencies, which are already installed
 
 @(
     @('core', 'Test-ScoopDebugEnabled'),
     @('getopt', 'Resolve-GetOpt'),
     @('help', 'scoop_help'),
     @('Helpers', 'New-IssuePrompt'),
-    @('Dependencies', 'Resolve-DependsProperty'),
-    @('depends', 'script_deps')
+    @('Dependencies', 'Resolve-DependsProperty')
 ) | ForEach-Object {
     if (!([bool] (Get-Command $_[1] -ErrorAction 'Ignore'))) {
         Write-Verbose "Import of lib '$($_[0])' initiated from '$PSCommandPath'"
@@ -20,18 +23,27 @@
 }
 
 $ExitCode = 0
-$Options, $Applications, $_err = Resolve-GetOpt $args 'a:' 'arch='
+$Problems = 0
+$Options, $Applications, $_err = Resolve-GetOpt $args 'a:s' 'arch=', 'skip-installed'
+$SkipInstalled = $Options.s -or $Options.'skip-installed'
 
 if ($_err) { Stop-ScoopExecution -Message "scoop depends: $_err" -ExitCode 2 }
+if (!$Applications) { Stop-ScoopExecution -Message 'Parameter <APP> missing' -Usage (my_usage) }
 
-# TODO: Multiple apps?
-$Application = $Applications[0]
 $Architecture = Resolve-ArchitectureParameter -Architecture $Options.a, $Options.arch
 
-if (!$Application) { Stop-ScoopExecution -Message 'Parameter <APP> missing' -Usage (my_usage) }
+$toInstall = Resolve-MultipleApplicationDependency -Applications $Applications -Architecture $Architecture -IncludeInstalled:(!$SkipInstalled)
+$_apps = @($toInstall | Where-Object -Property 'Dependency' -EQ -Value $false)
+$_deps = @($toInstall | Where-Object -Property 'Dependency' -EQ -Value $true)
 
-# TODO: Installed dependencies are not listed. Should they be shown??
-$deps = @(deps $Application $Architecture)
-if ($deps) { $deps[($deps.Length - 1)..0] | Write-UserMessage -Output }
+$message = 'No dependencies required'
+if ($_deps.Count -gt 0) {
+    $message = $_deps.Print -join "`r`n"
+}
+
+Write-UserMessage -Message $message -Output
+if ($Problems -gt 0) {
+    $ExitCode = 10 + $Problems
+}
 
 exit $ExitCode

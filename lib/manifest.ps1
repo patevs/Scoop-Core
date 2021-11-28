@@ -432,6 +432,7 @@ function Resolve-ManifestInformation {
 
         return [Ordered] @{
             'ApplicationName'  = $applicationName
+            'RequestedQuery'   = $ApplicationQuery
             'RequestedVersion' = $requestedVersion
             'Version'          = $applicationVersion
             'Bucket'           = $bucket

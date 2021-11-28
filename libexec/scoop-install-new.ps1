@@ -44,7 +44,7 @@
 $ExitCode = 0
 $Problems = 0
 $Options, $Applications, $_err = Resolve-GetOpt $args 'giksa:' 'global', 'independent', 'no-cache', 'skip', 'arch='
-if ($_err) { Stop-ScoopExecution -Message "scoop install: $err" -ExitCode 2 }
+if ($_err) { Stop-ScoopExecution -Message "scoop install: $_err" -ExitCode 2 }
 
 $Global = $Options.g -or $Options.global
 $Independent = $Options.i -or $Options.independent
@@ -60,7 +60,10 @@ Update-Scoop -CheckLastUpdate
 $suggested = @{ }
 $failedDependencies = @()
 $failedApplications = @()
-$toInstall = @()
+$toInstall = @{
+    'Failed'   = @()
+    'Resolved' = @()
+}
 
 # Properly resolve all dependencies and applications
 if ($Independent) {
@@ -69,12 +72,12 @@ if ($Independent) {
         try {
             $ar = Resolve-ManifestInformation -ApplicationQuery $a
         } catch {
-            $Problems++
+            ++$Problems
             Write-UserMessage -Message "$($_.Exception.Message)" -Err
             continue
         }
 
-        $toInstall += $ar
+        $toInstall.Resolved += $ar
     }
 } else {
     $toInstall = Resolve-MultipleApplicationDependency -Applications $Applications -Architecture $Architecture
@@ -83,22 +86,22 @@ if ($Independent) {
 # TODO: Try to rather remove from the array instead of creating new one
 # Filter not installed
 $new = @()
-foreach ($inst in $toInstall) {
+foreach ($inst in $toInstall.Resolved) {
     if (Test-ResolvedObjectIsInstalled -ResolvedObject $inst -Global:$Global) {
         continue
     }
     $new += $inst
 }
-$toInstall = $new
+$toInstall.Resolved = $new
 
-if ($toInstall.Count -eq 0) {
+if ($toInstall.Resolved.Count -eq 0) {
     Stop-ScoopExecution -Message 'Nothing to install' -ExitCode $ExitCode -SkipSeverity
 }
 
-foreach ($app in $toInstall) {
+foreach ($app in $toInstall.Resolved) {
     # Skip installation of application if any of the dependency failed
     if (($false -eq $Independent)) {
-        $applicationSpecificDependencies = ($toInstall | Where-Object -Property 'Dependency' -EQ $app.ApplicationName).Print
+        $applicationSpecificDependencies = ($toInstall.Resolved | Where-Object -Property 'Dependency' -EQ $app.ApplicationName).Print
         if ($null -eq $applicationSpecificDependencies) {
             $applicationSpecificDependencies = @()
         }

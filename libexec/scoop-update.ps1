@@ -55,7 +55,8 @@ if (!$Applications) {
     Update-Scoop
 } else {
     if ($Global -and !(is_admin)) { Stop-ScoopExecution -Message 'Admin privileges are required to manipulate with globally installed applications' -ExitCode 4 }
-    if (is_scoop_outdated) { Update-Scoop }
+
+    Update-Scoop -CheckLastUpdate
 
     $outdatedApplications = @()
     $failedApplications = @()

@@ -224,7 +224,7 @@ function Confirm-InstallationStatus {
     $Global | Out-Null # PowerShell/PSScriptAnalyzer#1472
     $installed = @()
 
-    foreach ($app in $Apps | Select-Object -Unique | Where-Object -Property 'Name' -NE -Value 'scoop' | Where-Object { $_ -NE 'scoop' }) {
+    foreach ($app in $Apps | Select-Object -Unique | Where-Object -Property 'Name' -NE -Value 'scoop' | Where-Object { $_ -ne 'scoop' }) {
         $info = install_info $app (Select-CurrentVersion -AppName $app -Global:$Global) $Global
         $buc = $info.bucket
 

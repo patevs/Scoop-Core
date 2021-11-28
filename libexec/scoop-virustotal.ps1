@@ -25,8 +25,7 @@
 #   -a, --arch <32bit|64bit|arm64>  Use the specified architecture, if the manifest supports it.
 #   -s, --scan                      For packages where VirusTotal has no information, send download URL for analysis (and future retrieval).
 #                                   This requires you to configure your virustotal_api_key (see help entry for config command).
-#   -n, --no-depends                By default, all dependencies are checked, too. This flag allows
-#                                   to avoid it.
+#   -i, --independent               By default, all dependencies are checked. Use this parameter check only the application without dependencies.
 
 @(
     @('core', 'Test-ScoopDebugEnabled'),
@@ -43,18 +42,17 @@
     }
 }
 
-# TODO: --no-depends => --independent
 # TODO: Drop --scan??
 
 $ExitCode = 0
-$Options, $Applications, $_err = Resolve-GetOpt $args 'a:sn' 'arch=', 'scan', 'no-depends'
+$Options, $Applications, $_err = Resolve-GetOpt $args 'a:si' 'arch=', 'scan', 'independent'
 
 if ($_err) { Stop-ScoopExecution -Message "scoop virustotal: $_err" -ExitCode 2 }
 if (!$Applications) { Stop-ScoopExecution -Message 'Parameter <APP> missing' -Usage (my_usage) }
 if (!$VT_API_KEY) { Stop-ScoopExecution -Message 'Virustotal API Key is required' }
 
 $DoScan = $Options.scan -or $Options.s
-$Independent = $Options.'no-depends' -or $Options.n
+$Independent = $Options.independent -or $Options.i
 $Architecture = Resolve-ArchitectureParameter -Architecture $Options.a, $Options.arch
 
 # Buildup all installed applications

@@ -25,6 +25,7 @@
         - E:/Install/Shovel/customManifest.yml # Even local manifest support. Use with caution in controlled environment!
         ```
 
+- **scoop-virustotal**: Rename parameter `no-depends` (`-n`) to `independent` (`-i`) for consistency with other commands
 - Consider debug mode enabled only when the `debug` config option or `SCOOP_DEBUG` is valid boolean value (`$true`, `$false`, `1`, `0`, `true`, `false`)
     - Prevent multiple evaluations of debug mode check
 - Respect `NO_JUNCTIONS` config when resolving helper utilities

@@ -30,11 +30,13 @@ if (!$Applications) { Stop-ScoopExecution -Message 'Parameter <APP> missing' -Us
 
 $Architecture = Resolve-ArchitectureParameter -Architecture $Options.a, $Options.arch
 
-$res = Resolve-MultipleApplicationDependency -Applications $Applications -Architecture $Architecture -IncludeInstalled:(!$SkipInstalled)
-if ($res.Failed.Count -gt 0) {
-    $Problems = $res.Failed.Count
+$toInstall = Resolve-MultipleApplicationDependency -Applications $Applications -Architecture $Architecture -IncludeInstalled:(!$SkipInstalled)
+$_a = @($toInstall | Where-Object -Property 'Dependency' -EQ -Value $false)
+$new = @($toInstall | Where-Object -Property 'Dependency' -EQ -Value $true)
+# TODOOOO: Handle edge case when a provided aplication was already resolved as an dependency
+if ($_a.Count -ne $Applications.Count) {
+    $Problems = $Applications.Count - $_a.Count
 }
-$new = $res.Applications | Where-Object -Property 'Dependency' -NE -Value $false
 
 $message = 'No dependencies required'
 if ($new.Count -gt 0) {

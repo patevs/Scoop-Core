@@ -55,7 +55,7 @@ $script:SCOOP_SHORT_PARAMETERS = @{
     'uninstall'  = 'g p'
     'update'     = 'f g i k s q'
     'utils'      = 'b'
-    'virustotal' = 'a s n'
+    'virustotal' = 'a s i'
 }
 $script:SCOOP_LONG_PARAMETERS = @{
     'cat'        = 'format'
@@ -71,7 +71,7 @@ $script:SCOOP_LONG_PARAMETERS = @{
     'uninstall'  = 'global purge'
     'update'     = 'force global independent no-cache skip quiet'
     'utils'      = 'bucketdir additional-options'
-    'virustotal' = 'arch scan no-depends'
+    'virustotal' = 'arch scan independent'
 }
 # Add --help and -h to all
 # TODO: Investigate cleaner approach

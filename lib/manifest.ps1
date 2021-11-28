@@ -295,17 +295,6 @@ function Get-ManifestFromLookup {
         }
         $requestedName, $requestedVersion = $requestedName -split '@'
 
-        if ($SimpleParse) {
-            $printableRepresentation = if ($requestedVersion) { "@$requestedVersion" } else { '' }
-
-            return @{
-                'Name'             = $requestedName
-                'Bucket'           = $requestedBucket
-                'RequestedVersion' = $requestedVersion
-                'Print'            = "$requestedBucket/$requestedName$printableRepresentation"
-            }
-        }
-
         # Local manifest with specific name in all buckets
         $found = @()
         $buckets = Get-LocalBucket

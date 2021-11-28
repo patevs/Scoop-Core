@@ -184,11 +184,12 @@ function Resolve-SpecificQueryDependency {
 # Create installation objects for all the dependencies and applications
 function Resolve-MultipleApplicationDependency {
     [CmdletBinding()]
-    [OutputType([System.Object[]])]
+    [OutputType([System.Collections.Hashtable])]
     param([System.Object[]] $Applications, [String] $Architecture, [Switch] $IncludeInstalled)
 
     begin {
         $toInstall = @()
+        $failed = @()
     }
 
     process {
@@ -198,6 +199,7 @@ function Resolve-MultipleApplicationDependency {
                 $deps = Get-ApplicationDependency -ApplicationQuery $app -Architecture $Architecture -IncludeInstalled:$IncludeInstalled
             } catch {
                 Write-UserMessage -Message $_.Exception.Message -Err
+                $failed += $app
                 continue
             }
 
@@ -228,6 +230,9 @@ function Resolve-MultipleApplicationDependency {
             }
         }
 
-        return $toInstall
+        return @{
+            'Failed'   = $failed
+            'Resolved' = $toInstall
+        }
     }
 }

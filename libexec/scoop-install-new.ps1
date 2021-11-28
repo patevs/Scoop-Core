@@ -115,8 +115,8 @@ foreach ($app in $toInstall) {
     }
 
     try {
-        # TODO: Add indication that it was dependency
-        Install-Application -ResolvedObject $app -Architecture $Architecture -Global:$Global $suggested -UseCache:$UseCache -CheckHash:$CheckHash
+        Install-ScoopApplication -ResolvedObject $app -Architecture $Architecture -Global:$Global -Suggested:$suggested `
+            -UseCache:$UseCache -CheckHash:$CheckHash
     } catch {
         ++$Problems
 

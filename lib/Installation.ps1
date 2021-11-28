@@ -9,7 +9,7 @@
     }
 }
 
-function Install-Application {
+function Install-ScoopApplication {
     [CmdletBinding()]
     param($ResolvedObject, [String] $Architecture, [Switch] $Global, $Suggested, [Switch] $UseCache, [Switch] $CheckHash)
 
@@ -138,14 +138,16 @@ function Set-ScoopInfoHelperFile {
     param($ResolvedObject, $Architecture, $Directory)
 
     process {
-        $dep = if ($ResolvedObject.Dependency -and ($ResolvedObject.Dependency -eq $true)) { $ResolvedObject.Dependency } else { $false }
+        $dep = if ($ResolvedObject.Dependency -ne $false) { $ResolvedObject.Dependency } else { $null }
         $url = if ($ResolvedObject.Url) { $ResolvedObject.Url } else { $ResolvedObject.LocalPath }
 
+        if ($ResolvedObject.Bucket) { $url = $null }
+
         $info = @{
-            'architecture' = $Architecture
-            'bucket'       = $ResolvedObject.Bucket
-            'url'          = "$url" # Force string in case of FileInfo
-            'dependency'   = $dep
+            'architecture'   = $Architecture
+            'bucket'         = $ResolvedObject.Bucket
+            'url'            = if ($url) { "$url" } else { $null } # Force string in case of FileInfo
+            'dependency_for' = $dep
         }
 
         $nulls = $info.Keys | Where-Object { $null -eq $info[$_] }

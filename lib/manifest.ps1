@@ -281,12 +281,10 @@ function Get-ManifestFromLookup {
         Lookup for manifest in all local buckets and return required information.
     .PARAMETER Query
         Specifies the lookup query.
-    .PARAMETER SimpleParse
-        Specifies to just parse the query and return simple object without manifest object.
     #>
     [CmdletBinding()]
     [OutputType([System.Collections.Hashtable])]
-    param([Parameter(Mandatory, ValueFromPipeline)] [String] $Query, [Switch] $SimpleParse)
+    param([Parameter(Mandatory, ValueFromPipeline)] [String] $Query)
 
     process {
         # Get all requested information

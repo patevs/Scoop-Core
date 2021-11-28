@@ -141,21 +141,26 @@ function Get-ApplicationDependency {
 function Resolve-SpecificQueryDependency {
     [CmdletBinding()]
     param(
+        [Parameter(Mandatory)]
         [String] $ApplicationQuery,
         [String] $Architecture,
         [System.Collections.ArrayList] $Resolved, # [out] ArrayList of Resolve-ManifestInformation objects
         [System.Collections.Arraylist] $Unresolved, # [out] ArrayList of strings
-        [Switch] $IncludeInstalled
+        [Switch] $IncludeInstalled,
+        $Manifest
     )
 
-    #[out]$resolved
-    #[out]$unresolved
-
     $information = $null
-    try {
-        $information = Resolve-ManifestInformation -ApplicationQuery $ApplicationQuery
-    } catch {
-        throw [ScoopException] "'$ApplicationQuery' -> $($_.Exception.Message)"
+    if ($Manifest) {
+        $information = @{}
+        $information.ApplicationName = $ApplicationQuery
+        $information.ManifestObject = $Manifest
+    } else {
+        try {
+            $information = Resolve-ManifestInformation -ApplicationQuery $ApplicationQuery
+        } catch {
+            throw [ScoopException] "'$ApplicationQuery' -> $($_.Exception.Message)"
+        }
     }
 
     $deps = @(Resolve-InstallationDependency -Manifest $information.ManifestObject -Architecture $Architecture -IncludeInstalled:$IncludeInstalled) + `

@@ -80,7 +80,7 @@ if ($Independent) {
         $toInstall.Resolved += $ar
     }
 } else {
-    $toInstall = Resolve-MultipleApplicationDependency -Applications $Applications -Architecture $Architecture
+    $toInstall = Resolve-MultipleApplicationDependency -Applications $Applications -Architecture $Architecture -IncludeInstalled
 }
 
 # TODO: Try to rather remove from the array instead of creating new one

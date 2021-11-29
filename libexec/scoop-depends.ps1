@@ -1,8 +1,10 @@
 # Usage: scoop depends [<OPTIONS>] <APP>...
 # Summary: List dependencies for application(s).
 # Help: All dependencies will be "resolved"/checked, if they are accessible (in case of remote manifests or different versions).
+#
 # If application was already resolved as a dependency, duplicate will not be added (even when the versions are different).
-# `shovel depends 7zip lessmsi@1.9.0` will resolve just to `main/lessmsi` instead of `main/lessmsi main/lessmsi@1.9.0`
+# 'shovel depends 7zip lessmsi@1.9.0' will resolve just to `main/lessmsi` instead of 'main/lessmsi main/lessmsi@1.9.0'
+# Output of depends command could be used for 'shovel cat' command to verify and check all the manifests, which will be installed.
 #
 # Options:
 #   -h, --help                      Show help for this command.
@@ -32,7 +34,7 @@ if (!$Applications) { Stop-ScoopExecution -Message 'Parameter <APP> missing' -Us
 
 $Architecture = Resolve-ArchitectureParameter -Architecture $Options.a, $Options.arch
 
-$toInstall = Resolve-MultipleApplicationDependency -Applications $Applications -Architecture $Architecture -IncludeInstalled:(!$SkipInstalled)
+$toInstall = Resolve-MultipleApplicationDependency -Applications $Applications -Architecture $Architecture -IncludeInstalledDeps:(!$SkipInstalled) -IncludeInstalledApps:(!$SkipInstalled)
 $_apps = @($toInstall.Resolved | Where-Object -Property 'Dependency' -EQ -Value $false)
 $_deps = @($toInstall.Resolved | Where-Object -Property 'Dependency' -NE -Value $false)
 

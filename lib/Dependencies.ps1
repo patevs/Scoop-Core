@@ -185,7 +185,7 @@ function Resolve-SpecificQueryDependency {
 function Resolve-MultipleApplicationDependency {
     [CmdletBinding()]
     [OutputType([System.Collections.Hashtable])]
-    param([System.Object[]] $Applications, [String] $Architecture, [Switch] $IncludeInstalled)
+    param([System.Object[]] $Applications, [String] $Architecture, [Switch] $IncludeInstalledDeps, [Switch] $IncludeInstalledApps)
 
     begin {
         $toInstall = @()
@@ -196,7 +196,7 @@ function Resolve-MultipleApplicationDependency {
         foreach ($app in $Applications) {
             $deps = @{}
             try {
-                $deps = Get-ApplicationDependency -ApplicationQuery $app -Architecture $Architecture -IncludeInstalled:$IncludeInstalled
+                $deps = Get-ApplicationDependency -ApplicationQuery $app -Architecture $Architecture -IncludeInstalled:($IncludeInstalledDeps -or $IncludeInstalledApps)
             } catch {
                 Write-UserMessage -Message $_.Exception.Message -Err
                 $failed += $app
@@ -210,7 +210,7 @@ function Resolve-MultipleApplicationDependency {
                 # TODOOOO: Better handle the different versions
                 if ($toInstall.ApplicationName -notcontains $dep.ApplicationName) {
                     $dep | Add-Member -MemberType 'NoteProperty' -Name 'Dependency' -Value $s.ApplicationName
-                    if ($IncludeInstalled -or !(installed $dep.ApplicationName)) {
+                    if ($IncludeInstalledDeps -or !(installed $dep.ApplicationName)) {
                         $toInstall += $dep
                     }
                 } else {
@@ -222,7 +222,7 @@ function Resolve-MultipleApplicationDependency {
             if ($toInstall.ApplicationName -notcontains $s.ApplicationName) {
                 $s | Add-Member -MemberType 'NoteProperty' -Name 'Dependency' -Value $false
 
-                if ($IncludeInstalled -or !(installed $s.ApplicationName)) {
+                if ($IncludeInstalledApps -or !(installed $s.ApplicationName)) {
                     $toInstall += $s
                 }
             } else {

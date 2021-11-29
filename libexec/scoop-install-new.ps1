@@ -80,7 +80,12 @@ if ($Independent) {
         $toInstall.Resolved += $ar
     }
 } else {
-    $toInstall = Resolve-MultipleApplicationDependency -Applications $Applications -Architecture $Architecture -IncludeInstalled
+    $toInstall = Resolve-MultipleApplicationDependency -Applications $Applications -Architecture $Architecture -IncludeInstalledApps
+}
+
+if ($toInstall.Failed.Count -gt 0) {
+    $Problems += $toInstall.Failed.Count
+    $failedApplications += $toInstall.Failed
 }
 
 # TODO: Try to rather remove from the array instead of creating new one
@@ -95,7 +100,17 @@ foreach ($inst in $toInstall.Resolved) {
 $toInstall.Resolved = $new
 
 if ($toInstall.Resolved.Count -eq 0) {
-    Stop-ScoopExecution -Message 'Nothing to install' -ExitCode $ExitCode -SkipSeverity
+    $ex = 0
+    if ($Problems -gt 0) {
+        $ex = 10 + $Problems
+
+        if ($failedApplications) {
+            $pl = pluralize $failedApplications.Count 'This application' 'These applications'
+            Write-UserMessage -Message "$pl failed to install: $($failedApplications -join ', ')" -Err
+        }
+    }
+
+    Stop-ScoopExecution -Message 'Nothing to install' -ExitCode $ex -SkipSeverity
 }
 
 foreach ($app in $toInstall.Resolved) {

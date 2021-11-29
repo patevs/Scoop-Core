@@ -166,7 +166,7 @@ function dl_with_cache($app, $version, $url, $to, $cookies = $null, $use_cache =
     $cached = cache_path $app $version $url
 
     if (!(Test-Path $cached) -or !$use_cache) {
-        Confirm-DirectoryExistence $SCOOP_CACHE_DIRECTORY | Out-Null
+        Confirm-DirectoryExistence -LiteralPath $SCOOP_CACHE_DIRECTORY | Out-Null
         do_dl $url "$cached.download" $cookies
         Move-Item "$cached.download" $cached -Force
     } else { Write-UserMessage -Message "Loading $(url_remote_filename $url) from cache" }
@@ -1058,6 +1058,12 @@ function find_dir_or_subdir($path, $dir) {
 }
 
 function env_add_path($manifest, $dir, $global, $arch) {
+    # TODO: Properly handle unix
+    if ($SHOVEL_IS_UNIX) {
+        Write-UserMessage -Message 'Environment variable manipulations are not supported on *nix' -Info
+        return
+    }
+
     $env_add_path = arch_specific 'env_add_path' $manifest $arch
 
     if ($env_add_path) {
@@ -1074,6 +1080,12 @@ function env_add_path($manifest, $dir, $global, $arch) {
 }
 
 function env_rm_path($manifest, $dir, $global, $arch) {
+    # TODO: Properly handle unix
+    if ($SHOVEL_IS_UNIX) {
+        Write-UserMessage -Message 'Environment variable manipulations are not supported on *nix' -Info
+        return
+    }
+
     $env_add_path = arch_specific 'env_add_path' $manifest $arch
     $env_add_path | Where-Object { $_ } | ForEach-Object {
         $path_dir = Join-Path $dir $_
@@ -1083,6 +1095,12 @@ function env_rm_path($manifest, $dir, $global, $arch) {
 }
 
 function env_set($manifest, $dir, $global, $arch) {
+    # TODO: Properly handle unix
+    if ($SHOVEL_IS_UNIX) {
+        Write-UserMessage -Message 'Environment variable manipulations are not supported on *nix' -Info
+        return
+    }
+
     $env_set = arch_specific 'env_set' $manifest $arch
     if ($env_set) {
         $env_set | Get-Member -Member NoteProperty | ForEach-Object {
@@ -1094,6 +1112,12 @@ function env_set($manifest, $dir, $global, $arch) {
     }
 }
 function env_rm($manifest, $global, $arch) {
+    # TODO: Properly handle unix
+    if ($SHOVEL_IS_UNIX) {
+        Write-UserMessage -Message 'Environment variable manipulations are not supported on *nix' -Info
+        return
+    }
+
     $env_set = arch_specific 'env_set' $manifest $arch
     if ($env_set) {
         $env_set | Get-Member -Member NoteProperty | ForEach-Object {
@@ -1198,7 +1222,7 @@ function persist_def($persist) {
 function persist_data($manifest, $original_dir, $persist_dir) {
     $persist = $manifest.persist
     if ($persist) {
-        $persist_dir = ensure $persist_dir
+        $persist_dir = Confirm-DirectoryExistence -LiteralPath $persist_dir
 
         if ($persist -is [String]) {
             $persist = @($persist);
@@ -1223,7 +1247,7 @@ function persist_data($manifest, $original_dir, $persist_dir) {
                 # we don't have persist data in the store, move the source to target, then create link
             } elseif (Test-Path $source) {
                 # ensure target parent folder exist
-                Split-Path $target | ensure | Out-Null
+                Split-Path $target | Confirm-DirectoryExistence | Out-Null
                 Move-Item $source $target
                 # we don't have neither source nor target data! we need to crate an empty target,
                 # but we can't make a judgement that the data should be a file or directory...
@@ -1231,7 +1255,7 @@ function persist_data($manifest, $original_dir, $persist_dir) {
                 # to create the source file before persisting (DO NOT use post_install)
             } else {
                 $target = New-Object System.IO.DirectoryInfo($target)
-                ensure $target | Out-Null
+                Confirm-DirectoryExistence -LiteralPath $target | Out-Null
             }
 
             # Mklink throw 'The system cannot find the path specified.' if the full path of the link does not exist.

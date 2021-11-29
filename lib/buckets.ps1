@@ -131,8 +131,8 @@ function Add-Bucket {
         throw "'$RepositoryUrl' is not valid git repository ($out)"
     }
 
-    ensure $SCOOP_BUCKETS_DIRECTORY | Out-Null
-    $bucketDirectory = (ensure $bucketDirectory).Path
+    Confirm-DirectoryExistence -LiteralPath $SCOOP_BUCKETS_DIRECTORY | Out-Null
+    $bucketDirectory = (Confirm-DirectoryExistence -LiteralPath $bucketDirectory).Path
     Write-UserMessage -Message 'Cloning bucket repository...' -Output:$false
     Invoke-GitCmd -Command 'clone' -Argument '--quiet', """$RepositoryUrl""", """$bucketDirectory""" -Proxy
 

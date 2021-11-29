@@ -692,7 +692,7 @@ function generate_user_manifest($app, $bucket, $version) {
         return $null
     }
 
-    $path = usermanifestsdir | ensure
+    $path = usermanifestsdir | Confirm-DirectoryExistence
     try {
         $newManifest = Invoke-Autoupdate $app "$path" $manifest $version $(@{ }) -IgnoreArchive
         if ($null -eq $newManifest) { throw "Could not install $app@$version" }

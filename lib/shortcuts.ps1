@@ -34,7 +34,7 @@ function shortcut_folder($global) {
     $base = if ($global) { 'commonstartmenu' } else { 'startmenu' }
     $directory = [System.Environment]::GetFolderPath($base) | Join-Path -ChildPath 'Programs\Scoop Apps'
 
-    return ensure $directory
+    return Confirm-DirectoryExistence -LiteralPath $directory
 }
 
 function startmenu_shortcut([System.IO.FileInfo] $target, $shortcutName, $arguments, [System.IO.FileInfo]$icon, $global) {

@@ -16,7 +16,7 @@ function install_psmodule($manifest, $dir, $global) {
     if (!$moduleName) { throw [ScoopException] "Invalid manifest|-The 'name' property is missing from 'psmodule'" } # TerminatingError thrown
 
     $modules = if ($global) { $SCOOP_GLOBAL_MODULE_DIRECTORY } else { $SCOOP_MODULE_DIRECTORY }
-    $modules = Confirm-DirectoryExistence -Path $modules
+    $modules = Confirm-DirectoryExistence -LiteralPath $modules
 
     ensure_in_psmodulepath $SCOOP_MODULE_DIRECTORY $false
     if ($global) { ensure_in_psmodulepath $SCOOP_GLOBAL_MODULE_DIRECTORY $true }
@@ -54,6 +54,9 @@ function uninstall_psmodule($manifest, $dir, $global) {
 }
 
 function ensure_in_psmodulepath($dir, $global) {
+    # TODO: Properly support unix
+    if ($SHOVEL_IS_UNIX) { return }
+
     $path = env 'psmodulepath' $global
     if (!$global -and ($null -eq $path)) {
         # Add "default" psmodule path

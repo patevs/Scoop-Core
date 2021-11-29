@@ -57,7 +57,7 @@ function Get-UserAgent {
         'AMD64' { $arch = 'Win64; x64;' }
     }
 
-    if (Test-IsUnix) {
+    if ($SHOVEL_IS_UNIX) {
         $system = Invoke-SystemComSpecCommand -Unix 'uname -s'
         $arch = Invoke-SystemComSpecCommand -Unix 'uname -srv'
         $arch = "$arch;"
@@ -114,7 +114,7 @@ function Invoke-SystemComSpecCommand {
     )
 
     process {
-        if (Test-IsUnix) {
+        if ($SHOVEL_IS_UNIX) {
             $shell = $env:SHELL
             $parameters = @('-c', $Unix)
         } else {
@@ -131,6 +131,61 @@ function Invoke-SystemComSpecCommand {
     }
 }
 
+function New-DirectoryJunctionLink {
+    <#
+    .SYNOPSIS
+        Create a new directory junction.
+    .DESCRIPTION
+        On Unix ln --symbolic will be used instead.
+    .PARAMETER Target
+        Specifies the real directory path.
+    .PARAMETER LinkName
+        Specifies the symbolic link name.
+    #>
+    [CmdletBinding()]
+    param([String] $Target, [String] $LinkName)
+
+    process {
+        Invoke-SystemCommand -Windows "MKLINK /J ""$LinkName"" ""$Target""" -Unix "ln --symbolic ""$Target"" ""$LinkName"""
+    }
+}
+
+function New-FileHardLink {
+    <#
+    .SYNOPSIS
+        Create a new file hard link.
+    .PARAMETER Target
+        Specifies the real directory path.
+    .PARAMETER LinkName
+        Specifies the symbolic link name.
+    #>
+    [CmdletBinding()]
+    param([String] $Target, [String] $LinkName)
+
+    process {
+        Invoke-SystemCommand -Windows "MKLINK /H ""$LinkName"" ""$Target""" -Unix "ln ""$Target"" ""$LinkName"""
+    }
+}
+
+function Remove-DirectoryJunctionLink {
+    <#
+    .SYNOPSIS
+        Removes directory junction.
+    .PARAMETER Target
+        Specifies the directory junction path.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [Alias('Link', 'Target', 'LiteralPath', 'Path', 'Directory')]
+        [String] $LinkName
+    )
+
+    process {
+        Invoke-SystemCommand -Windows "RMDIR ""$LinkName""" -Unix "rm ""$LinkName"""
+    }
+}
+
 function Test-IsArmArchitecture {
     <#
     .SYNOPSIS
@@ -141,7 +196,7 @@ function Test-IsArmArchitecture {
     param()
 
     process {
-        if (Test-IsUnix) {
+        if ($SHOVEL_IS_UNIX) {
             return (Invoke-SystemComSpecCommand -Unix 'uname -m') -like 'aarch*'
         } else {
             return $env:PROCESSOR_IDENTIFIER -like 'ARMv*'
@@ -717,7 +772,7 @@ function warn_on_overwrite($shim_ps1, $path) {
 function shim($path, $global, $name, $arg) {
     if (!(Test-Path $path)) { throw [ScoopException] "Shim creation fail|-Cannot shim '$(fname $path)': could not find '$path'" } # TerminatingError thrown
 
-    $abs_shimdir = shimdir $global | ensure
+    $abs_shimdir = shimdir $global | Confirm-DirectoryExistence
     if (!$name) { $name = strip_ext (fname $path) }
 
     $shim = Join-Path $abs_shimdir $name.ToLower()
@@ -795,8 +850,10 @@ function search_in_path($target) {
     }
 }
 
-# TODO: Unix
 function ensure_in_path($dir, $global) {
+    # TODO: Properly handle unix
+    if ($SHOVEL_IS_UNIX) { return }
+
     $path = env 'PATH' $global
     if ($path -notmatch [System.Text.RegularExpressions.Regex]::Escape($dir)) {
         Write-UserMessage -Message "Adding $(friendly_path $dir) to $(if($global){'global'}else{'your'}) path." -Output
@@ -849,7 +906,7 @@ function remove_from_path($dir, $global) {
 }
 
 function ensure_scoop_in_path($global) {
-    $abs_shimdir = shimdir $global | ensure
+    $abs_shimdir = shimdir $global | Confirm-DirectoryExistence
     # be aggressive (b-e-aggressive) and install scoop first in the path
     ensure_in_path $abs_shimdir $global
 }
@@ -1070,6 +1127,7 @@ $SCOOP_CONFIGURATION = load_cfg $SCOOP_CONFIGURATION_FILE
 
 # General variables
 $SHOVEL_DEBUG_ENABLED = Test-ScoopDebugEnabled
+$SHOVEL_IS_UNIX = Test-IsUnix
 
 # TODO: Remove deprecated variables
 $scoopdir = $SCOOP_ROOT_DIRECTORY

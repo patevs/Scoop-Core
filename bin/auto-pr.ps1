@@ -238,7 +238,7 @@ foreach ($changedFile in $manifestsToUpdate) {
         $status = _gitWrapper @splat -Command 'status' -Argument '--porcelain', '--untracked-files=no'
         $status = $status | Where-Object { $_ -match "M\s{2}.*$($gci.Name)" }
         if ($status -and $status.StartsWith('M  ') -and $status.EndsWith($gci.Name)) {
-            $delim = if (Test-IsUnix) { '""' } else { '"' }
+            $delim = if ($SHOVEL_IS_UNIX) { '""' } else { '"' }
             $commitA = '--message', "$delim${applicationName}: Update to version $version$delim"
             if ($archived) {
                 $commitA += '--message', "${delim}Archive version $oldVersion$delim"
